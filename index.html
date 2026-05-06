@@ -594,7 +594,6 @@ function renderDash(){
     qm.appendChild(d);
   });
 
-  var estadosPct={'Diseño shablón enviado':20,'Shablón listo':40,'Tubos estampados':60,'Bases pegadas':80,'Envío embalado':100};
   var activePedidos=(S.pedidos||[]).filter(function(p){return !p.enviado});
   var pCount=document.getElementById('dash-pedidos-count');
   if(pCount)pCount.textContent=activePedidos.length+' activos';
@@ -604,7 +603,8 @@ function renderDash(){
     else{
       pList.innerHTML='';
       activePedidos.forEach(function(p){
-        var pct=estadosPct[p.estado]||0;
+        var checked=(p.estado||'').split(',').filter(Boolean).length;
+        var pct=Math.round((checked/ESTADOS_PEDIDO.length)*100);
         var col=pct===100?'var(--green)':pct>=75?'var(--gold)':pct>=50?'#3d6aaa':'var(--txt2)';
         var div=document.createElement('div');
         div.className='dash-pedido-link';
@@ -748,7 +748,12 @@ async function addTareaComment(){var text=document.getElementById('mtc-text').va
 var selectedUrgencia='media';
 function selectUrgencia(val,el){selectedUrgencia=val;document.querySelectorAll('.urgencia-opt').forEach(function(o){o.classList.remove('selected')});el.classList.add('selected')}
 function urgenciaBadge(u){var m={baja:'urgencia-baja',media:'urgencia-media',alta:'urgencia-alta'};var l={baja:'Baja',media:'Media',alta:'Alta'};return '<span class="'+(m[u]||'urgencia-media')+'">'+(l[u]||u)+'</span>'}
-function estadoColor(e){return {'Diseño shablón enviado':'bgy','Shablón listo':'ba','Tubos estampados':'bb','Bases pegadas':'bp','Envío embalado':'bgr'}[e]||'bgy'}
+function estadoColor(e){
+  // e may be comma-separated, show badge for last state
+  var states=(e||'').split(',').map(function(s){return s.trim()}).filter(Boolean);
+  var last=states[states.length-1]||'';
+  return {'Diseño shablón enviado':'bgy','Shablón listo':'ba','Tubos estampados':'bb','Bases pegadas':'bp','Envío embalado':'bgr'}[last]||'bgy';
+}
 function renderInsumos(){
   var tb=document.getElementById('insumos-table');if(!tb)return;
   var sorted=(S.insumos||[]).slice().sort(function(a,b){var o={alta:0,media:1,baja:2};return (o[a.urgencia]||1)-(o[b.urgencia]||1)});
@@ -809,15 +814,17 @@ function renderPedidos(){
     var estadoIdx=ESTADOS_PEDIDO.indexOf(p.estado);
     var tr=document.createElement('tr');
     var stepsHtml='<div style="display:flex;flex-direction:column;gap:2px">';
+    var checkedEstados=(p.estado||'').split(',').map(function(s){return s.trim()}).filter(Boolean);
     ESTADOS_PEDIDO.forEach(function(e,i){
-      var active=p.estado===e;
+      var active=checkedEstados.indexOf(e)>=0;
       var color=active?'var(--gold)':'var(--txt3)';
       var bg=active?'rgba(212,168,50,0.12)':'transparent';
       var border=active?'rgba(212,168,50,0.35)':'rgba(0,0,0,0.08)';
       var weight=active?'700':'400';
+      var checkIcon=active?'<span style="font-size:9px;color:var(--gold);margin-left:auto">✓</span>':'';
       stepsHtml+='<div class="estado-step" data-estado="'+e+'" style="display:flex;align-items:center;gap:5px;padding:3px 8px;border-radius:6px;cursor:pointer;border:1px solid '+border+';background:'+bg+';margin-bottom:2px">'
         +'<div style="width:6px;height:6px;border-radius:50%;background:'+color+';flex-shrink:0"></div>'
-        +'<span style="font-size:10px;font-weight:'+weight+';color:'+color+'">'+e+'</span></div>';
+        +'<span style="font-size:10px;font-weight:'+weight+';color:'+color+'">'+e+'</span>'+checkIcon+'</div>';
     });
     stepsHtml+='</div>';
     tr.innerHTML='<td>'+fmtDate(p.fecha)+'</td>'
@@ -834,7 +841,14 @@ function renderPedidos(){
     pt.appendChild(tr);
   });
 }
-async function setEstadoPedido(id,estado){var p=(S.pedidos||[]).find(function(x){return x.id===id});if(!p)return;p.estado=estado;await sbUpsert('crm_pedidos',p);renderPedidos();if(currentPage==='dashboard')renderDash()}
+async function setEstadoPedido(id,estado){
+  var p=(S.pedidos||[]).find(function(x){return x.id===id});if(!p)return;
+  var current=(p.estado||'').split(',').map(function(s){return s.trim()}).filter(Boolean);
+  var idx=current.indexOf(estado);
+  if(idx>=0){current.splice(idx,1)}else{current.push(estado)}
+  p.estado=current.join(',');
+  await sbUpsert('crm_pedidos',p);renderPedidos();if(currentPage==='dashboard')renderDash()
+}
 function openEditPedido(p){document.getElementById('mpe-id').value=p.id;document.getElementById('mpe-fecha').value=p.fecha||'';document.getElementById('mpe-cliente').value=p.cliente||'';document.getElementById('mpe-cantidad').value=p.cantidad||'';document.getElementById('mpe-estado').value=p.estado||'Shablón listo';document.getElementById('mpe-notas').value=p.notas||'';openModal('modal-pedido-edit')}
 async function updatePedido(){var v=function(id){return document.getElementById(id).value};var id=v('mpe-id');var p=(S.pedidos||[]).find(function(x){return x.id===id});if(!p)return;p.fecha=v('mpe-fecha');p.cliente=v('mpe-cliente');p.cantidad=v('mpe-cantidad');p.estado=v('mpe-estado');p.notas=v('mpe-notas');await sbUpsert('crm_pedidos',p);closeModal('modal-pedido-edit');toast('Pedido actualizado');renderPedidos();if(currentPage==='dashboard')renderDash()}
 async function savePedido(){var v=function(id){return document.getElementById(id).value};if(!v('mp-cliente').trim()){toast('Ingresa el cliente',true);return}var row={id:uid(),fecha:v('mp-fecha'),cliente:v('mp-cliente'),cantidad:v('mp-cantidad'),estado:v('mp-estado'),enviado:false,notas:v('mp-notas')};await sbInsert('crm_pedidos',row);S.pedidos.unshift(row);closeModal('modal-pedido');toast('Pedido guardado');renderPedidos();if(currentPage==='dashboard')renderDash()}
