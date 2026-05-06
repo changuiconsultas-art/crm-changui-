@@ -425,6 +425,30 @@ textarea{resize:vertical;min-height:80px}
 
 <div class="modal-bg" id="modal-met" onclick="modalBgClick(event,this)"><div class="modal"><div class="modal-title">+ Cargar Metrica</div><div class="form-row"><label>Fecha</label><input type="date" id="mm-fecha"></div><div class="form-row"><label>Tipo</label><select id="mm-tipo"><option>Reel</option><option>Carrusel</option><option>Historia</option></select></div><div class="form-row"><label>Angulo del contenido</label><input type="text" id="mm-angulo"></div><div class="form-row"><label>CTA</label><input type="text" id="mm-cta"></div><div class="form-grid2"><div class="form-row"><label>Comentarios</label><input type="number" id="mm-coments" placeholder="0"></div><div class="form-row"><label>Seguidores nuevos</label><input type="number" id="mm-segs" placeholder="0"></div></div><div class="form-row"><label>Leads generados</label><input type="number" id="mm-leads" placeholder="0"></div><div class="form-row"><label>Ventas</label><input type="text" id="mm-ventas" placeholder="Martin R., Lucia V."></div><div class="form-row"><label>Primer contacto de</label><input type="text" id="mm-pc"></div><div class="form-row"><label>Ultimo contacto de</label><input type="text" id="mm-uc"></div><div class="modal-footer"><button class="btn btn-outline btn-sm" onclick="closeModal('modal-met')">Cancelar</button><button class="btn btn-gold btn-sm" onclick="saveMet()">Guardar</button></div></div></div>
 
+
+<!-- Modal Editar Tarea -->
+<div class="modal-bg" id="modal-tarea-edit" onclick="modalBgClick(event,this)">
+  <div class="modal">
+    <div class="modal-title">Editar Tarea</div>
+    <input type="hidden" id="mte-id">
+    <div class="form-row"><label>Titulo</label><input type="text" id="mte-titulo" placeholder="Que hay que hacer?"></div>
+    <div class="form-row"><label>Asignar a</label>
+      <select id="mte-miembro"><option>Sol</option><option>Colo</option><option>Guada</option><option>Deto</option><option>Tomi</option></select>
+    </div>
+    <div class="form-grid2">
+      <div class="form-row"><label>Fecha</label><input type="date" id="mte-fecha"></div>
+      <div class="form-row"><label>Prioridad</label>
+        <select id="mte-prio"><option value="normal">Normal</option><option value="alta">Alta</option><option value="urgente">Urgente</option></select>
+      </div>
+    </div>
+    <div class="form-row"><label>Descripcion / Guia</label><textarea id="mte-desc" placeholder="Instrucciones..." style="min-height:80px"></textarea></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" onclick="closeModal('modal-tarea-edit')">Cancelar</button>
+      <button class="btn btn-gold btn-sm" onclick="updateTarea()">Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast-container"></div>
 <script>
 // SUPABASE
@@ -705,31 +729,58 @@ function renderPersonTabs(){
 function renderTareas(){
   var filtered=filterTareasTime(S.tareas||[]);
   var board=document.getElementById('tareas-board');if(!board)return;
-  board.innerHTML=TEAM.map(function(name,ci){
+  board.innerHTML='';
+  TEAM.forEach(function(name,ci){
     var col=TEAM_COLORS[ci];
-    var cards=filtered.filter(function(t){return t.miembro===name}).sort(function(a,b){if(a.done&&!b.done)return 1;if(!a.done&&b.done)return -1;return new Date(a.fecha||'9999')-new Date(b.fecha||'9999')});
+    var cards=filtered.filter(function(t){return t.miembro===name}).sort(function(a,b){
+      if(a.done&&!b.done)return 1;if(!a.done&&b.done)return -1;
+      return new Date(a.fecha||'9999')-new Date(b.fecha||'9999');
+    });
     var pending=cards.filter(function(c){return !c.done}).length;
-    return '<div class="tareas-col" data-person="'+name+'">'
-      +'<div class="tareas-col-header"><div class="tareas-col-name" style="color:'+col+'">'+name+'</div><div class="tareas-col-count">'+pending+' pend.</div></div>'
-      +'<div class="tareas-col-body">'
-      +cards.map(function(t){
+    var colDiv=document.createElement('div');
+    colDiv.className='tareas-col';
+    colDiv.setAttribute('data-person',name);
+    var pendStyle=pending>0?'background:rgba(184,72,72,0.12);color:#d07070;border:1px solid rgba(184,72,72,0.2)':'';
+    colDiv.innerHTML='<div class="tareas-col-header">'
+      +'<div class="tareas-col-name" style="color:'+col+'">'+name+'</div>'
+      +'<div class="tareas-col-count" style="'+pendStyle+'">'+pending+' pend.</div>'
+      +'</div>'
+      +'<div class="tareas-col-body" id="col-body-'+name+'"></div>';
+    board.appendChild(colDiv);
+    var body=document.getElementById('col-body-'+name);
+    if(!cards.length){
+      body.innerHTML='<div style="color:var(--txt3);font-size:11px;text-align:center;padding:16px">Sin tareas</div>';
+    } else {
+      cards.forEach(function(t){
         var comments=t.comments||[];
         var prioClass=t.prio==='alta'?'prio-alta':t.prio==='urgente'?'prio-urgente':'prio-normal';
-        return '<div class="tarea-card'+(t.done?' done':'')+'">'
-          +'<div class="tarea-card-top"><div class="tarea-check'+(t.done?' done':'')+'" onclick="toggleTarea(\''+t.id+'\')"></div>'
+        var card=document.createElement('div');
+        card.className='tarea-card'+(t.done?' done':'');
+        card.innerHTML='<div class="tarea-card-top">'
+          +'<div class="tarea-check'+(t.done?' done':'')+'"></div>'
           +'<div class="tarea-title">'+(t.titulo||'Sin titulo')+'</div>'
-          +'<button class="btn-del" onclick="delTarea(\''+t.id+'\')">x</button></div>'
-          +'<div class="tarea-meta">'+(t.fecha?'<span class="tarea-date">'+fmtDate(t.fecha)+'</span>':'')+'<span class="'+prioClass+'">'+(t.prio||'')+'</span></div>'
+          +'<div style="display:flex;gap:2px;flex-shrink:0">'
+          +'<button style="background:transparent;border:1px solid rgba(61,106,170,0.3);color:#3d6aaa;font-size:10px;cursor:pointer;padding:2px 8px;border-radius:4px;font-weight:700">Edit</button>'
+          +'<button class="btn-del">x</button>'
+          +'</div></div>'
+          +(t.fecha||t.prio?'<div class="tarea-meta">'+(t.fecha?'<span class="tarea-date">'+fmtDate(t.fecha)+'</span>':'')+'<span class="'+prioClass+'">'+(t.prio||'')+'</span></div>':'')
           +(t.descripcion?'<div class="tarea-desc">'+t.descripcion+'</div>':'')
-          +'<div class="tarea-actions"><span class="tarea-comments-btn'+(comments.length?' has-comments':'')+'" onclick="openTareaComments(\''+t.id+'\')">'
-          +(comments.length?comments.length+' comentario':'Comentar')+'</span>'
-          +(t.done?'<span class="bgr" style="font-size:9px">Hecho</span>':'')+'</div></div>';
-      }).join('')
-      +(cards.length===0?'<div style="color:var(--txt3);font-size:11px;text-align:center;padding:16px">Sin tareas</div>':'')
-      +'</div></div>';
-  }).join('');
+          +'<div class="tarea-actions">'
+          +'<span class="tarea-comments-btn'+(comments.length?' has-comments':'')+'">'+(comments.length?comments.length+' comentario':'Comentar')+'</span>'
+          +(t.done?'<span class="bgr" style="font-size:9px">Hecho</span>':'')
+          +'</div>';
+        // Event listeners
+        card.querySelector('.tarea-check').onclick=(function(tid){return function(){toggleTarea(tid)}})(t.id);
+        card.querySelectorAll('button')[0].onclick=(function(tobj){return function(){openEditTarea(tobj.id)}})(t);
+        card.querySelectorAll('button')[1].onclick=(function(tid){return function(){delTarea(tid)}})(t.id);
+        card.querySelector('.tarea-comments-btn').onclick=(function(tid){return function(){openTareaComments(tid)}})(t.id);
+        body.appendChild(card);
+      });
+    }
+  });
   renderPersonTabs();
 }
+
 async function saveTarea(){
   var v=function(id){return document.getElementById(id).value};
   if(!v('mt-titulo').trim()){toast('Ingresa un titulo',true);return}
@@ -738,6 +789,33 @@ async function saveTarea(){
   ['mt-titulo','mt-fecha','mt-desc'].forEach(function(id){document.getElementById(id).value=''});
   closeModal('modal-tarea');toast('Tarea guardada');renderTareas();
 }
+
+function openEditTarea(id){
+  var t=(S.tareas||[]).find(function(x){return x.id===id});if(!t)return;
+  document.getElementById('mte-id').value=t.id;
+  document.getElementById('mte-titulo').value=t.titulo||'';
+  document.getElementById('mte-miembro').value=t.miembro||'Sol';
+  document.getElementById('mte-fecha').value=t.fecha||'';
+  document.getElementById('mte-prio').value=t.prio||'normal';
+  document.getElementById('mte-desc').value=t.descripcion||'';
+  openModal('modal-tarea-edit');
+}
+
+async function updateTarea(){
+  var v=function(id){return document.getElementById(id).value};
+  var id=v('mte-id');
+  var t=(S.tareas||[]).find(function(x){return x.id===id});if(!t)return;
+  t.titulo=v('mte-titulo');
+  t.miembro=v('mte-miembro');
+  t.fecha=v('mte-fecha');
+  t.prio=v('mte-prio');
+  t.descripcion=v('mte-desc');
+  await sbUpsert('crm_tareas',t);
+  closeModal('modal-tarea-edit');
+  toast('Tarea actualizada');
+  renderTareas();
+}
+
 async function toggleTarea(id){var t=(S.tareas||[]).find(function(x){return x.id===id});if(!t)return;t.done=!t.done;await sbUpsert('crm_tareas',t);renderTareas()}
 async function delTarea(id){if(!confirm('Eliminar tarea?'))return;await sbDelete('crm_tareas',id);S.tareas=S.tareas.filter(function(x){return x.id!==id});renderTareas()}
 function openTareaComments(id){currentCommentTareaId=id;var t=(S.tareas||[]).find(function(x){return x.id===id});if(!t)return;document.getElementById('mtc-title').textContent=t.titulo||'Comentarios';renderCommentsList(t.comments||[]);document.getElementById('mtc-text').value='';openModal('modal-tarea-comment')}
