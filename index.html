@@ -334,6 +334,108 @@ textarea{resize:vertical;min-height:80px}
   #main{padding:64px 10px 80px}
   .modal{padding:16px 12px 28px}
 }
+
+/* CHATBOT */
+#chat-btn{
+  position:fixed;bottom:24px;right:24px;z-index:800;
+  width:52px;height:52px;border-radius:50%;
+  background:linear-gradient(135deg,var(--gold),var(--goldl));
+  border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 20px rgba(212,168,50,0.4);
+  font-size:22px;transition:transform 0.2s,box-shadow 0.2s;
+}
+#chat-btn:hover{transform:scale(1.08);box-shadow:0 6px 28px rgba(212,168,50,0.5)}
+#chat-btn .chat-badge{
+  position:absolute;top:-2px;right:-2px;
+  width:16px;height:16px;border-radius:50%;
+  background:var(--red);color:#fff;
+  font-size:9px;font-weight:700;display:none;
+  align-items:center;justify-content:center;
+  border:2px solid var(--bg);
+}
+#chat-window{
+  position:fixed;bottom:86px;right:24px;z-index:800;
+  width:360px;max-width:calc(100vw - 24px);
+  height:520px;max-height:calc(100vh - 100px);
+  background:#fff;
+  border:1px solid rgba(0,0,0,0.1);
+  border-radius:18px;
+  box-shadow:0 8px 40px rgba(0,0,0,0.15);
+  display:none;flex-direction:column;overflow:hidden;
+}
+#chat-window.open{display:flex}
+.chat-header{
+  padding:14px 16px;
+  background:linear-gradient(135deg,#1e1c1a,#2d2a27);
+  display:flex;align-items:center;gap:10px;flex-shrink:0;
+}
+.chat-header-avatar{
+  width:36px;height:36px;border-radius:50%;
+  background:linear-gradient(135deg,var(--gold),var(--goldl));
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;flex-shrink:0;
+}
+.chat-header-info{flex:1}
+.chat-header-name{font-size:13px;font-weight:700;color:#fff}
+.chat-header-status{font-size:10px;color:rgba(255,255,255,0.5);display:flex;align-items:center;gap:4px}
+.chat-header-status::before{content:'';width:6px;height:6px;border-radius:50%;background:#3d8a5a}
+.chat-tabs{display:flex;border-bottom:1px solid rgba(0,0,0,0.08);flex-shrink:0}
+.chat-tab{flex:1;padding:8px;font-size:11px;font-weight:700;text-align:center;cursor:pointer;color:var(--txt2);border-bottom:2px solid transparent;transition:all 0.15s;background:transparent;border-top:none;border-left:none;border-right:none}
+.chat-tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+.chat-messages{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;-webkit-overflow-scrolling:touch}
+.chat-msg{max-width:82%;word-break:break-word;line-height:1.45}
+.chat-msg.user{
+  align-self:flex-end;
+  background:linear-gradient(135deg,var(--gold),var(--goldl));
+  color:#1a1917;padding:9px 13px;border-radius:16px 16px 4px 16px;
+  font-size:12px;font-weight:600;
+}
+.chat-msg.bot{
+  align-self:flex-start;
+  background:#f5f4f1;color:var(--txt);
+  padding:9px 13px;border-radius:16px 16px 16px 4px;
+  font-size:12px;border:1px solid rgba(0,0,0,0.06);
+}
+.chat-msg.bot.typing{color:var(--txt2)}
+.chat-msg-time{font-size:9px;opacity:0.55;margin-top:3px;text-align:right}
+.chat-input-row{
+  padding:10px 12px;border-top:1px solid rgba(0,0,0,0.08);
+  display:flex;gap:8px;align-items:flex-end;flex-shrink:0;background:#fff;
+}
+.chat-input-row textarea{
+  flex:1;border:1px solid rgba(0,0,0,0.12);border-radius:12px;
+  padding:8px 12px;font-size:12px;resize:none;min-height:38px;max-height:100px;
+  font-family:'Barlow',sans-serif;background:#faf9f7;color:var(--txt);
+  box-shadow:none;
+}
+.chat-input-row textarea:focus{outline:none;border-color:rgba(196,152,32,0.4)}
+#chat-send-btn{
+  width:38px;height:38px;border-radius:50%;
+  background:linear-gradient(135deg,var(--gold),var(--goldl));
+  border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;flex-shrink:0;
+  transition:transform 0.15s;
+}
+#chat-send-btn:hover{transform:scale(1.08)}
+.chat-knowledge-panel{
+  flex:1;overflow-y:auto;padding:12px;-webkit-overflow-scrolling:touch;
+}
+.chat-knowledge-panel textarea{
+  width:100%;min-height:200px;border:1px solid rgba(0,0,0,0.1);
+  border-radius:10px;padding:10px;font-size:12px;
+  font-family:'Barlow',sans-serif;color:var(--txt);
+  background:#faf9f7;resize:vertical;box-shadow:none;
+}
+.chat-knowledge-panel textarea:focus{outline:none;border-color:rgba(196,152,32,0.4)}
+.chat-k-label{font-size:10px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;margin-top:10px}
+.chat-k-hint{font-size:10px;color:var(--txt3);line-height:1.5;margin-bottom:8px}
+@media(max-width:768px){
+  #chat-btn{bottom:16px;right:16px;width:48px;height:48px;font-size:20px}
+  #chat-window{bottom:74px;right:8px;width:calc(100vw - 16px);height:460px}
+}
+
 </style>
 </head>
 <body>
@@ -535,6 +637,69 @@ textarea{resize:vertical;min-height:80px}
     <div class="modal-footer">
       <button class="btn btn-outline btn-sm" onclick="closeModal('modal-tarea-edit')">Cancelar</button>
       <button class="btn btn-gold btn-sm" onclick="updateTarea()">Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- CHATBOT -->
+<button id="chat-btn" onclick="toggleChat()" title="Asistente del equipo">
+  <span id="chat-icon">✦</span>
+  <div class="chat-badge" id="chat-badge"></div>
+</button>
+
+<div id="chat-window">
+  <div class="chat-header">
+    <div class="chat-header-avatar">✦</div>
+    <div class="chat-header-info">
+      <div class="chat-header-name">Asistente Changui</div>
+      <div class="chat-header-status">En linea</div>
+    </div>
+    <button onclick="toggleChat()" style="background:transparent;border:none;color:rgba(255,255,255,0.5);font-size:18px;cursor:pointer;padding:4px">×</button>
+  </div>
+  <div class="chat-tabs">
+    <button class="chat-tab active" onclick="switchChatTab('chat',this)">Chat</button>
+    <button class="chat-tab" onclick="switchChatTab('knowledge',this)">Conocimiento</button>
+    <button class="chat-tab" onclick="switchChatTab('config',this)">Config</button>
+  </div>
+  <!-- CHAT TAB -->
+  <div id="chat-tab-chat" style="display:flex;flex-direction:column;flex:1;overflow:hidden">
+    <div class="chat-messages" id="chat-messages">
+      <div class="chat-msg bot">Hola! Soy el asistente de Changui. Puedo responder sobre los pedidos, tareas, insumos y el negocio en general. ¿En que te ayudo?</div>
+    </div>
+    <div class="chat-input-row">
+      <textarea id="chat-input" placeholder="Escribi tu consulta..." rows="1" onkeydown="chatKeyDown(event)"></textarea>
+      <button id="chat-send-btn" onclick="sendChat()">➤</button>
+    </div>
+  </div>
+  <!-- KNOWLEDGE TAB -->
+  <div id="chat-tab-knowledge" style="display:none;flex-direction:column;flex:1;overflow:hidden">
+    <div class="chat-knowledge-panel">
+      <div class="chat-k-label">Informacion del negocio</div>
+      <div class="chat-k-hint">Contale al bot todo sobre Changui: que hacen, como trabajan, quienes son los clientes, precios, procesos. Cuanto mas detalle, mejor responde.</div>
+      <textarea id="chat-biz-info" placeholder="Ej: Changui es una marca de mates artesanales. Hacemos mates personalizados con sablones. Nuestros clientes son mayoristas y minoristas. El proceso es: diseño → shablon → estampado → bases → embalado → envio..."></textarea>
+      <div class="chat-k-label" style="margin-top:14px">Preguntas frecuentes del equipo</div>
+      <div class="chat-k-hint">Respuestas a preguntas comunes que hace el equipo.</div>
+      <textarea id="chat-faq" placeholder="Ej: P: Como se calcula el precio? R: Base + costo shablon + margen 40%&#10;P: Cuanto tarda un pedido? R: 7-10 dias habiles..."></textarea>
+      <button class="btn btn-gold btn-sm" style="width:100%;margin-top:12px;min-height:40px" onclick="saveKnowledge()">Guardar conocimiento</button>
+    </div>
+  </div>
+  <!-- CONFIG TAB -->
+  <div id="chat-tab-config" style="display:none;flex-direction:column;flex:1;overflow:hidden">
+    <div class="chat-knowledge-panel">
+      <div class="chat-k-label">API Key de Groq</div>
+      <div class="chat-k-hint">La misma key que usas en Metricas IA. Gratis en console.groq.com</div>
+      <input type="password" id="chat-apikey" placeholder="gsk_..." style="margin-bottom:12px" oninput="saveChatKey(this.value)">
+      <div class="chat-k-label">Nombre del asistente</div>
+      <input type="text" id="chat-bot-name" placeholder="Asistente Changui" style="margin-bottom:12px" oninput="saveChatName(this.value)">
+      <div class="chat-k-label">Personalidad del bot</div>
+      <div class="chat-k-hint">Como queres que responda el bot.</div>
+      <select id="chat-personality" style="margin-bottom:12px" onchange="saveChatPersonality(this.value)">
+        <option value="profesional">Profesional y directo</option>
+        <option value="amigable">Amigable y casual</option>
+        <option value="tecnico">Tecnico y detallado</option>
+      </select>
+      <button class="btn btn-outline btn-sm" style="width:100%;margin-top:4px" onclick="clearChatHistory()">Limpiar historial del chat</button>
     </div>
   </div>
 </div>
@@ -1092,6 +1257,146 @@ async function analyzeMetrics(){
 function renderExportar(){document.getElementById('exp-stats').innerHTML=[{l:'Tareas',n:(S.tareas||[]).length},{l:'Contenido',n:(S.content||[]).length+(S.hists||[]).length},{l:'Referencias',n:(S.referencias||[]).length},{l:'Metricas',n:(S.mets||[]).length},{l:'Insumos',n:(S.insumos||[]).length},{l:'Pedidos',n:(S.pedidos||[]).length},{l:'Gastos',n:(S.gastos2||[]).length},{l:'Total reg.',n:(S.tareas||[]).length+(S.content||[]).length+(S.pedidos||[]).length}].map(function(x){return '<div class="stat-item"><div class="stat-n">'+x.n+'</div><div class="stat-l">'+x.l+'</div></div>'}).join('')}
 function exportData(){var blob=new Blob([JSON.stringify({tareas:S.tareas,content:S.content,hists:S.hists,refs:S.refs,mets:S.mets,insumos:S.insumos,pedidos:S.pedidos,referencias:S.referencias,gastos2:S.gastos2},null,2)],{type:'application/json'});var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='crm-backup-'+new Date().toISOString().slice(0,10)+'.json';a.click();toast('Exportado')}
 async function importData(e){var file=e.target.files[0];if(!file)return;var reader=new FileReader();reader.onload=async function(ev){try{var d=JSON.parse(ev.target.result);var ops=[];if(d.tareas)d.tareas.forEach(function(r){ops.push(sbUpsert('crm_tareas',r))});if(d.content)d.content.forEach(function(r){ops.push(sbUpsert('crm_content',r))});if(d.pedidos)d.pedidos.forEach(function(r){ops.push(sbUpsert('crm_pedidos',r))});await Promise.all(ops);await loadAll();toast('Importado')}catch{toast('Error al importar',true)}};reader.readAsText(file);e.target.value=''}
+
+
+// ===== CHATBOT =====
+var chatOpen=false;
+var chatHistory=[];
+
+function toggleChat(){
+  chatOpen=!chatOpen;
+  var win=document.getElementById('chat-window');
+  var badge=document.getElementById('chat-badge');
+  win.classList.toggle('open',chatOpen);
+  badge.style.display='none';
+  if(chatOpen){loadChatConfig();setTimeout(function(){scrollChatToBottom()},100)}
+}
+
+function switchChatTab(tab,el){
+  ['chat','knowledge','config'].forEach(function(t){
+    var d=document.getElementById('chat-tab-'+t);
+    if(d)d.style.display=t===tab?'flex':'none';
+  });
+  document.querySelectorAll('.chat-tab').forEach(function(b){b.classList.remove('active')});
+  el.classList.add('active');
+}
+
+function scrollChatToBottom(){
+  var msgs=document.getElementById('chat-messages');
+  if(msgs)msgs.scrollTop=msgs.scrollHeight;
+}
+
+function addChatMsg(role,text){
+  var msgs=document.getElementById('chat-messages');if(!msgs)return null;
+  var div=document.createElement('div');div.className='chat-msg '+role;
+  var now=new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+  div.innerHTML=text.replace(/\n/g,'<br>')+'<div class="chat-msg-time">'+now+'</div>';
+  msgs.appendChild(div);scrollChatToBottom();return div;
+}
+
+function chatKeyDown(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat()}}
+
+function buildCrmContext(){
+  var today=new Date();
+  var lines=['=== DATOS ACTUALES DEL CRM ==='];
+  var pedidos=(S.pedidos||[]).filter(function(p){return !p.enviado});
+  lines.push('PEDIDOS ACTIVOS ('+pedidos.length+'):');
+  pedidos.forEach(function(p){
+    var checked=(p.estado||'').split(',').filter(Boolean);
+    lines.push('- '+p.cliente+' | '+p.cantidad+' | Estados: '+(checked.join(', ')||'sin iniciar')+' | Fecha: '+p.fecha);
+  });
+  var tareasPend=(S.tareas||[]).filter(function(t){return !t.done});
+  lines.push('\nTAREAS PENDIENTES ('+tareasPend.length+'):');
+  tareasPend.slice(0,10).forEach(function(t){
+    lines.push('- ['+t.miembro+'] '+t.titulo+(t.fecha?' | Fecha: '+t.fecha:'')+(t.prio&&t.prio!=='normal'?' | Prioridad: '+t.prio:''));
+  });
+  var sinEnc=(S.insumos||[]).filter(function(i){return !i.encargado&&!i.llego});
+  if(sinEnc.length){
+    lines.push('\nINSUMOS SIN ENCARGAR:');
+    sinEnc.forEach(function(i){lines.push('- '+i.nombre+' ('+i.urgencia+')')});
+  }
+  var gastosPend=(S.gastos2||[]).filter(function(g){return !g.reembolsado});
+  if(gastosPend.length){
+    var tot=gastosPend.reduce(function(s,g){return s+(Number(g.monto)||0)},0);
+    lines.push('\nGASTOS PENDIENTES REEMBOLSO: $'+tot.toLocaleString('es-AR'));
+  }
+  var pedidosLisetos=(S.pedidos||[]).filter(function(p){return p.estado&&p.estado.indexOf('Envio embalado')>=0&&!p.enviado});
+  if(pedidosLisetos.length)lines.push('\nPEDIDOS PARA ENVIAR: '+pedidosLisetos.map(function(p){return p.cliente}).join(', '));
+  lines.push('\nFECHA: '+today.toLocaleDateString('es-AR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}));
+  return lines.join('\n');
+}
+
+async function sendChat(){
+  var inp=document.getElementById('chat-input');
+  var text=(inp&&inp.value||'').trim();if(!text)return;
+  var apiKey=(localStorage.getItem('crm_chat_key')||localStorage.getItem('crm_ai_key')||'').trim();
+  if(!apiKey){addChatMsg('bot','Necesito una API Key de Groq. Toca la pestana Config y cargala.');return}
+  inp.value='';inp.style.height='38px';
+  addChatMsg('user',text);
+  chatHistory.push({role:'user',content:text});
+  var typingDiv=addChatMsg('bot','Escribiendo...');
+  if(typingDiv)typingDiv.className='chat-msg bot typing';
+  var biz=localStorage.getItem('crm_chat_biz')||'';
+  var faq=localStorage.getItem('crm_chat_faq')||'';
+  var botName=localStorage.getItem('crm_chat_name')||'Asistente Changui';
+  var pers=localStorage.getItem('crm_chat_personality')||'amigable';
+  var persDesc={profesional:'Profesional, directo y conciso.',amigable:'Amigable, casual, usando lunfardo argentino cuando es natural.',tecnico:'Tecnico y detallado.'}[pers]||'';
+  var sys='Sos '+botName+', el asistente interno de Changui. '+persDesc+'\n\n';
+  if(biz)sys+='INFORMACION DEL NEGOCIO:\n'+biz+'\n\n';
+  if(faq)sys+='PREGUNTAS FRECUENTES:\n'+faq+'\n\n';
+  sys+=buildCrmContext();
+  sys+='\n\nResponde siempre en castellano rioplatense. Si no sabes algo, decilo claramente.';
+  var messages=[{role:'system',content:sys}];
+  chatHistory.slice(-8).forEach(function(m){messages.push(m)});
+  try{
+    var res=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+      method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},
+      body:JSON.stringify({model:'llama-3.1-8b-instant',messages:messages,max_tokens:600,temperature:0.7})
+    });
+    var now=new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'});
+    if(!res.ok){
+      var err=await res.json();
+      if(typingDiv){typingDiv.innerHTML=('Error: '+((err.error&&err.error.message)||'Revisa la API key')).replace(/\n/g,'<br>')+'<div class="chat-msg-time">'+now+'</div>';typingDiv.className='chat-msg bot';}
+    }else{
+      var data=await res.json();
+      var reply=(data.choices&&data.choices[0]&&data.choices[0].message&&data.choices[0].message.content)||'Sin respuesta';
+      chatHistory.push({role:'assistant',content:reply});
+      if(typingDiv){typingDiv.innerHTML=reply.replace(/\n/g,'<br>')+'<div class="chat-msg-time">'+now+'</div>';typingDiv.className='chat-msg bot';}
+      scrollChatToBottom();
+    }
+  }catch(e){
+    if(typingDiv){typingDiv.innerHTML='Error de conexion: '+e.message;typingDiv.className='chat-msg bot';}
+  }
+}
+
+function saveKnowledge(){
+  var b=document.getElementById('chat-biz-info');var f=document.getElementById('chat-faq');
+  if(b)try{localStorage.setItem('crm_chat_biz',b.value)}catch{}
+  if(f)try{localStorage.setItem('crm_chat_faq',f.value)}catch{}
+  toast('Conocimiento guardado');
+}
+function saveChatKey(v){try{localStorage.setItem('crm_chat_key',v)}catch{}}
+function saveChatName(v){try{localStorage.setItem('crm_chat_name',v)}catch{}}
+function saveChatPersonality(v){try{localStorage.setItem('crm_chat_personality',v)}catch{}}
+function clearChatHistory(){
+  chatHistory=[];
+  var msgs=document.getElementById('chat-messages');
+  if(msgs)msgs.innerHTML='<div class="chat-msg bot">Historial limpiado. Como puedo ayudarte?</div>';
+  toast('Historial limpiado');
+}
+function loadChatConfig(){
+  try{
+    var k=document.getElementById('chat-apikey');if(k)k.value=localStorage.getItem('crm_chat_key')||localStorage.getItem('crm_ai_key')||'';
+    var n=document.getElementById('chat-bot-name');if(n)n.value=localStorage.getItem('crm_chat_name')||'';
+    var p=document.getElementById('chat-personality');if(p)p.value=localStorage.getItem('crm_chat_personality')||'amigable';
+    var b=document.getElementById('chat-biz-info');if(b)b.value=localStorage.getItem('crm_chat_biz')||'';
+    var f=document.getElementById('chat-faq');if(f)f.value=localStorage.getItem('crm_chat_faq')||'';
+  }catch{}
+}
+document.addEventListener('DOMContentLoaded',function(){
+  var inp=document.getElementById('chat-input');
+  if(inp)inp.addEventListener('input',function(){this.style.height='38px';this.style.height=Math.min(this.scrollHeight,100)+'px'});
+});
 
 // ===== INIT =====
 window.addEventListener('resize',function(){if(currentPage==='tareas')renderPersonTabs()});
