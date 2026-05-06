@@ -413,9 +413,9 @@ textarea{resize:vertical;min-height:80px}
 
 <div class="modal-bg" id="modal-gasto" onclick="modalBgClick(event,this)"><div class="modal"><div class="modal-title">+ Cargar Gasto</div><div class="form-row"><label>Quien compro?</label><select id="mg2-quien"><option>Sol</option><option>Colo</option><option>Guada</option><option>Deto</option><option>Tomi</option></select></div><div class="form-row"><label>Que compro?</label><input type="text" id="mg2-item" placeholder="Ej: Alcohol isopropilico 1L..."></div><div class="form-grid2"><div class="form-row"><label>Monto ($)</label><input type="number" id="mg2-monto" placeholder="0"></div><div class="form-row"><label>Fecha</label><input type="date" id="mg2-fecha"></div></div><div class="form-row"><label>Comprobante / Nota</label><textarea id="mg2-comp" placeholder="Numero de factura, ticket..." style="min-height:60px"></textarea></div><div class="modal-footer"><button class="btn btn-outline btn-sm" onclick="closeModal('modal-gasto')">Cancelar</button><button class="btn btn-gold btn-sm" onclick="saveGasto2()">Guardar</button></div></div></div>
 
-<div class="modal-bg" id="modal-pedido" onclick="modalBgClick(event,this)"><div class="modal"><div class="modal-title">+ Nuevo Pedido Mayorista</div><div class="form-grid2"><div class="form-row"><label>Fecha</label><input type="date" id="mp-fecha"></div><div class="form-row"><label>Cliente</label><input type="text" id="mp-cliente" placeholder="Nombre del cliente"></div></div><div class="form-row"><label>Cantidad / Productos</label><input type="text" id="mp-cantidad" placeholder="Ej: 50 tubos azules, 30 bases blancas..."></div><div class="form-row"><label>Estado</label><select id="mp-estado"><option>Shablón listo</option><option>Tubos listos</option><option>Bases pegadas</option><option>Pedido embalado</option></select></div><div class="form-row"><label>Notas</label><textarea id="mp-notas" style="min-height:60px"></textarea></div><div class="modal-footer"><button class="btn btn-outline btn-sm" onclick="closeModal('modal-pedido')">Cancelar</button><button class="btn btn-gold btn-sm" onclick="savePedido()">Guardar</button></div></div></div>
+<div class="modal-bg" id="modal-pedido" onclick="modalBgClick(event,this)"><div class="modal"><div class="modal-title">+ Nuevo Pedido Mayorista</div><div class="form-grid2"><div class="form-row"><label>Fecha</label><input type="date" id="mp-fecha"></div><div class="form-row"><label>Cliente</label><input type="text" id="mp-cliente" placeholder="Nombre del cliente"></div></div><div class="form-row"><label>Cantidad / Productos</label><input type="text" id="mp-cantidad" placeholder="Ej: 50 tubos azules, 30 bases blancas..."></div><div class="form-row"><label>Estado</label><select id="mp-estado"><option>Diseño shablón enviado</option><option>Shablón listo</option><option>Tubos estampados</option><option>Bases pegadas</option><option>Envío embalado</option></select></div><div class="form-row"><label>Notas</label><textarea id="mp-notas" style="min-height:60px"></textarea></div><div class="modal-footer"><button class="btn btn-outline btn-sm" onclick="closeModal('modal-pedido')">Cancelar</button><button class="btn btn-gold btn-sm" onclick="savePedido()">Guardar</button></div></div></div>
 
-<div class="modal-bg" id="modal-pedido-edit" onclick="modalBgClick(event,this)"><div class="modal"><div class="modal-title">Editar Pedido</div><input type="hidden" id="mpe-id"><div class="form-grid2"><div class="form-row"><label>Fecha</label><input type="date" id="mpe-fecha"></div><div class="form-row"><label>Cliente</label><input type="text" id="mpe-cliente"></div></div><div class="form-row"><label>Cantidad / Productos</label><input type="text" id="mpe-cantidad"></div><div class="form-row"><label>Estado</label><select id="mpe-estado"><option>Shablón listo</option><option>Tubos listos</option><option>Bases pegadas</option><option>Pedido embalado</option></select></div><div class="form-row"><label>Notas</label><textarea id="mpe-notas" style="min-height:60px"></textarea></div><div class="modal-footer"><button class="btn btn-outline btn-sm" onclick="closeModal('modal-pedido-edit')">Cancelar</button><button class="btn btn-gold btn-sm" onclick="updatePedido()">Guardar cambios</button></div></div></div>
+<div class="modal-bg" id="modal-pedido-edit" onclick="modalBgClick(event,this)"><div class="modal"><div class="modal-title">Editar Pedido</div><input type="hidden" id="mpe-id"><div class="form-grid2"><div class="form-row"><label>Fecha</label><input type="date" id="mpe-fecha"></div><div class="form-row"><label>Cliente</label><input type="text" id="mpe-cliente"></div></div><div class="form-row"><label>Cantidad / Productos</label><input type="text" id="mpe-cantidad"></div><div class="form-row"><label>Estado</label><select id="mpe-estado"><option>Diseño shablón enviado</option><option>Shablón listo</option><option>Tubos estampados</option><option>Bases pegadas</option><option>Envío embalado</option></select></div><div class="form-row"><label>Notas</label><textarea id="mpe-notas" style="min-height:60px"></textarea></div><div class="modal-footer"><button class="btn btn-outline btn-sm" onclick="closeModal('modal-pedido-edit')">Cancelar</button><button class="btn btn-gold btn-sm" onclick="updatePedido()">Guardar cambios</button></div></div></div>
 
 <div class="modal-bg" id="modal-content" onclick="modalBgClick(event,this)"><div class="modal"><div class="modal-title">+ Nueva Pieza</div><div class="form-row"><label>Fecha</label><input type="date" id="mc-fecha"></div><div class="form-row"><label>Tipo</label><select id="mc-tipo"><option>Reel</option><option>Carrusel</option></select></div><div class="form-row"><label>Angulo</label><input type="text" id="mc-angulo" placeholder="Nombre del angulo"></div><div class="form-row"><label>Formato</label><input type="text" id="mc-formato" placeholder="Tutorial, Listicle..."></div><div class="form-row"><label>CTA</label><input type="text" id="mc-cta"></div><div class="form-row"><label>Hook</label><input type="text" id="mc-hook"></div><div class="form-row"><label>Guion</label><textarea id="mc-guion"></textarea></div><div class="form-row"><label>Estado</label><select id="mc-estado"><option>Idea</option><option>Guion listo</option><option>Grabando</option><option>Editando</option><option>Subido</option></select></div><div class="modal-footer"><button class="btn btn-outline btn-sm" onclick="closeModal('modal-content')">Cancelar</button><button class="btn btn-gold btn-sm" onclick="saveContent()">Guardar</button></div></div></div>
 
@@ -476,7 +476,7 @@ function fmtMoney(u,a,e){var p=[];if(u&&Number(u)!=0)p.push('$'+Number(u).toLoca
 var S={tasks:[],found:{avatar:{},offer:{}},foundId:null,content:[],hists:[],refs:[],mets:[],leads:[],clients:[],ing:[],gas:[],angulos:[],tareas:[],insumos:[],pedidos:[],referencias:[],gastos2:[]};
 var TEAM=['Sol','Colo','Guada','Deto','Tomi'];
 var TEAM_COLORS=['#d4a832','#3d8a5a','#7a4ab8','#3d6aaa','#b84848'];
-var ESTADOS_PEDIDO=['Shablón listo','Tubos listos','Bases pegadas','Pedido embalado'];
+var ESTADOS_PEDIDO=['Diseño shablón enviado','Shablón listo','Tubos estampados','Bases pegadas','Envío embalado'];
 
 // LOAD ALL
 function defaultTasks(){
@@ -594,7 +594,7 @@ function renderDash(){
     qm.appendChild(d);
   });
 
-  var estadosPct={'Shablón listo':25,'Tubos listos':50,'Bases pegadas':75,'Pedido embalado':100};
+  var estadosPct={'Diseño shablón enviado':20,'Shablón listo':40,'Tubos estampados':60,'Bases pegadas':80,'Envío embalado':100};
   var activePedidos=(S.pedidos||[]).filter(function(p){return !p.enviado});
   var pCount=document.getElementById('dash-pedidos-count');
   if(pCount)pCount.textContent=activePedidos.length+' activos';
@@ -748,7 +748,7 @@ async function addTareaComment(){var text=document.getElementById('mtc-text').va
 var selectedUrgencia='media';
 function selectUrgencia(val,el){selectedUrgencia=val;document.querySelectorAll('.urgencia-opt').forEach(function(o){o.classList.remove('selected')});el.classList.add('selected')}
 function urgenciaBadge(u){var m={baja:'urgencia-baja',media:'urgencia-media',alta:'urgencia-alta'};var l={baja:'Baja',media:'Media',alta:'Alta'};return '<span class="'+(m[u]||'urgencia-media')+'">'+(l[u]||u)+'</span>'}
-function estadoColor(e){return {'Shablón listo':'bgy','Tubos listos':'ba','Bases pegadas':'bb','Pedido embalado':'bgr'}[e]||'bgy'}
+function estadoColor(e){return {'Diseño shablón enviado':'bgy','Shablón listo':'ba','Tubos estampados':'bb','Bases pegadas':'bp','Envío embalado':'bgr'}[e]||'bgy'}
 function renderInsumos(){
   var tb=document.getElementById('insumos-table');if(!tb)return;
   var sorted=(S.insumos||[]).slice().sort(function(a,b){var o={alta:0,media:1,baja:2};return (o[a.urgencia]||1)-(o[b.urgencia]||1)});
@@ -810,13 +810,14 @@ function renderPedidos(){
     var tr=document.createElement('tr');
     var stepsHtml='<div style="display:flex;flex-direction:column;gap:2px">';
     ESTADOS_PEDIDO.forEach(function(e,i){
-      var active=p.estado===e,past=estadoIdx>i;
-      var color=active?'var(--gold)':past?'var(--green)':'var(--txt3)';
-      var bg=active?'rgba(212,168,50,0.12)':past?'rgba(61,138,90,0.08)':'transparent';
-      var border=active?'rgba(212,168,50,0.3)':past?'rgba(61,138,90,0.2)':'rgba(255,255,255,0.04)';
-      stepsHtml+='<div class="estado-step" data-estado="'+e+'" style="display:flex;align-items:center;gap:5px;padding:2px 6px;border-radius:5px;cursor:pointer;border:1px solid '+border+';background:'+bg+'">'
-        +'<div style="width:5px;height:5px;border-radius:50%;background:'+color+';flex-shrink:0"></div>'
-        +'<span style="font-size:10px;font-weight:600;color:'+color+'">'+e+'</span></div>';
+      var active=p.estado===e;
+      var color=active?'var(--gold)':'var(--txt3)';
+      var bg=active?'rgba(212,168,50,0.12)':'transparent';
+      var border=active?'rgba(212,168,50,0.35)':'rgba(0,0,0,0.08)';
+      var weight=active?'700':'400';
+      stepsHtml+='<div class="estado-step" data-estado="'+e+'" style="display:flex;align-items:center;gap:5px;padding:3px 8px;border-radius:6px;cursor:pointer;border:1px solid '+border+';background:'+bg+';margin-bottom:2px">'
+        +'<div style="width:6px;height:6px;border-radius:50%;background:'+color+';flex-shrink:0"></div>'
+        +'<span style="font-size:10px;font-weight:'+weight+';color:'+color+'">'+e+'</span></div>';
     });
     stepsHtml+='</div>';
     tr.innerHTML='<td>'+fmtDate(p.fecha)+'</td>'
