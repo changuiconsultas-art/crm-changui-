@@ -436,6 +436,18 @@ textarea{resize:vertical;min-height:80px}
   #chat-window{bottom:74px;right:8px;width:calc(100vw - 16px);height:460px}
 }
 
+
+/* COMPROBANTE */
+.comp-thumb{width:32px;height:32px;border-radius:6px;object-fit:cover;cursor:pointer;border:1px solid rgba(0,0,0,0.1);transition:transform 0.15s}
+.comp-thumb:hover{transform:scale(1.1)}
+.comp-view-btn{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;color:var(--blue);cursor:pointer;padding:3px 8px;border-radius:5px;border:1px solid rgba(61,106,170,0.25);background:rgba(61,106,170,0.06);transition:all 0.15s}
+.comp-view-btn:hover{background:rgba(61,106,170,0.12)}
+#modal-comp-view .modal{max-width:520px;text-align:center}
+#modal-comp-view img{max-width:100%;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,0.15)}
+.file-upload-btn{display:flex;align-items:center;gap:8px;padding:10px 14px;border:2px dashed rgba(0,0,0,0.15);border-radius:var(--brs);cursor:pointer;background:rgba(0,0,0,0.02);transition:all 0.15s;color:var(--txt2);font-size:12px;font-weight:600}
+.file-upload-btn:hover{border-color:rgba(196,152,32,0.4);background:rgba(196,152,32,0.04);color:var(--gold)}
+.file-upload-preview{width:60px;height:60px;border-radius:8px;object-fit:cover;border:1px solid rgba(0,0,0,0.1);margin-top:8px}
+
 </style>
 </head>
 <body>
@@ -603,7 +615,7 @@ textarea{resize:vertical;min-height:80px}
 
 <div class="modal-bg" id="modal-insumo" onclick="modalBgClick(event,this)"><div class="modal"><div class="modal-title">+ Agregar Insumo</div><div class="form-row"><label>Nombre del insumo</label><input type="text" id="min-nombre" placeholder="Ej: Alcohol, Film, Etiquetas..."></div><div class="form-row"><label>Urgencia</label><div style="display:flex;gap:10px;margin-top:4px"><label class="urgencia-opt" style="flex:1;text-align:center;padding:10px;border-radius:8px;border:2px solid rgba(61,138,90,0.3);cursor:pointer;background:rgba(61,138,90,0.06);color:#5eb87a;font-weight:700;font-size:12px" onclick="selectUrgencia('baja',this)"><input type="radio" name="urgencia" value="baja" style="display:none"> Baja</label><label class="urgencia-opt" style="flex:1;text-align:center;padding:10px;border-radius:8px;border:2px solid rgba(192,136,48,0.3);cursor:pointer;background:rgba(192,136,48,0.06);color:#d4a050;font-weight:700;font-size:12px" onclick="selectUrgencia('media',this)"><input type="radio" name="urgencia" value="media" style="display:none"> Media</label><label class="urgencia-opt" style="flex:1;text-align:center;padding:10px;border-radius:8px;border:2px solid rgba(184,72,72,0.3);cursor:pointer;background:rgba(184,72,72,0.06);color:#d07070;font-weight:700;font-size:12px" onclick="selectUrgencia('alta',this)"><input type="radio" name="urgencia" value="alta" style="display:none"> Alta</label></div></div><div class="form-row"><label>Fecha</label><input type="date" id="min-fecha"></div><div class="modal-footer"><button class="btn btn-outline btn-sm" onclick="closeModal('modal-insumo')">Cancelar</button><button class="btn btn-gold btn-sm" onclick="saveInsumo()">Guardar</button></div></div></div>
 
-<div class="modal-bg" id="modal-gasto" onclick="modalBgClick(event,this)"><div class="modal"><div class="modal-title">+ Cargar Gasto</div><div class="form-row"><label>Quien compro?</label><select id="mg2-quien"><option>Sol</option><option>Colo</option><option>Guada</option><option>Deto</option><option>Tomi</option></select></div><div class="form-row"><label>Que compro?</label><input type="text" id="mg2-item" placeholder="Ej: Alcohol isopropilico 1L..."></div><div class="form-grid2"><div class="form-row"><label>Monto ($)</label><input type="number" id="mg2-monto" placeholder="0"></div><div class="form-row"><label>Fecha</label><input type="date" id="mg2-fecha"></div></div><div class="form-row"><label>Comprobante / Nota</label><textarea id="mg2-comp" placeholder="Numero de factura, ticket..." style="min-height:60px"></textarea></div><div class="modal-footer"><button class="btn btn-outline btn-sm" onclick="closeModal('modal-gasto')">Cancelar</button><button class="btn btn-gold btn-sm" onclick="saveGasto2()">Guardar</button></div></div></div>
+<div class="modal-bg" id="modal-gasto" onclick="modalBgClick(event,this)"><div class="modal"><div class="modal-title">+ Cargar Gasto</div><div class="form-row"><label>Quien compro?</label><select id="mg2-quien"><option>Sol</option><option>Colo</option><option>Guada</option><option>Deto</option><option>Tomi</option></select></div><div class="form-row"><label>Que compro?</label><input type="text" id="mg2-item" placeholder="Ej: Alcohol isopropilico 1L..."></div><div class="form-grid2"><div class="form-row"><label>Monto ($)</label><input type="number" id="mg2-monto" placeholder="0"></div><div class="form-row"><label>Fecha</label><input type="date" id="mg2-fecha"></div></div><div class="form-row"><label>Comprobante / Nota</label><textarea id="mg2-comp" placeholder="Numero de factura, numero de ticket..." style="min-height:50px"></textarea></div><div class="form-row"><label>Foto del comprobante (opcional)</label><label class="file-upload-btn" for="mg2-comp-file"><span>📷</span><span id="mg2-comp-file-label"> Subir foto del ticket / factura</span></label><input type="file" id="mg2-comp-file" accept="image/*" style="display:none" onchange="previewCompFile(this)"><img id="mg2-comp-preview" class="file-upload-preview" style="display:none"></div><div class="modal-footer"><button class="btn btn-outline btn-sm" onclick="closeModal('modal-gasto')">Cancelar</button><button class="btn btn-gold btn-sm" onclick="saveGasto2()">Guardar</button></div></div></div>
 
 <div class="modal-bg" id="modal-pedido" onclick="modalBgClick(event,this)"><div class="modal"><div class="modal-title">+ Nuevo Pedido Mayorista</div><div class="form-grid2"><div class="form-row"><label>Fecha</label><input type="date" id="mp-fecha"></div><div class="form-row"><label>Cliente</label><input type="text" id="mp-cliente" placeholder="Nombre del cliente"></div></div><div class="form-row"><label>Cantidad / Productos</label><input type="text" id="mp-cantidad" placeholder="Ej: 50 tubos azules, 30 bases blancas..."></div><div class="form-row"><label>Estado</label><select id="mp-estado"><option>Diseño shablón enviado</option><option>Shablón listo</option><option>Tubos estampados</option><option>Bases pegadas</option><option>Envío embalado</option></select></div><div class="form-row"><label>Notas</label><textarea id="mp-notas" style="min-height:60px"></textarea></div><div class="modal-footer"><button class="btn btn-outline btn-sm" onclick="closeModal('modal-pedido')">Cancelar</button><button class="btn btn-gold btn-sm" onclick="savePedido()">Guardar</button></div></div></div>
 
@@ -617,6 +629,19 @@ textarea{resize:vertical;min-height:80px}
 
 <div class="modal-bg" id="modal-met" onclick="modalBgClick(event,this)"><div class="modal"><div class="modal-title">+ Cargar Metrica</div><div class="form-row"><label>Fecha</label><input type="date" id="mm-fecha"></div><div class="form-row"><label>Tipo</label><select id="mm-tipo"><option>Reel</option><option>Carrusel</option><option>Historia</option></select></div><div class="form-row"><label>Angulo del contenido</label><input type="text" id="mm-angulo"></div><div class="form-row"><label>CTA</label><input type="text" id="mm-cta"></div><div class="form-grid2"><div class="form-row"><label>Comentarios</label><input type="number" id="mm-coments" placeholder="0"></div><div class="form-row"><label>Seguidores nuevos</label><input type="number" id="mm-segs" placeholder="0"></div></div><div class="form-row"><label>Leads generados</label><input type="number" id="mm-leads" placeholder="0"></div><div class="form-row"><label>Ventas</label><input type="text" id="mm-ventas" placeholder="Martin R., Lucia V."></div><div class="form-row"><label>Primer contacto de</label><input type="text" id="mm-pc"></div><div class="form-row"><label>Ultimo contacto de</label><input type="text" id="mm-uc"></div><div class="modal-footer"><button class="btn btn-outline btn-sm" onclick="closeModal('modal-met')">Cancelar</button><button class="btn btn-gold btn-sm" onclick="saveMet()">Guardar</button></div></div></div>
 
+
+
+<!-- Modal Ver Comprobante -->
+<div class="modal-bg" id="modal-comp-view" onclick="modalBgClick(event,this)">
+  <div class="modal">
+    <div class="modal-title" id="comp-view-title">Comprobante</div>
+    <div id="comp-view-content" style="margin-bottom:16px"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" onclick="closeModal('modal-comp-view')">Cerrar</button>
+      <a id="comp-download-btn" class="btn btn-gold btn-sm" download="comprobante.jpg">Descargar</a>
+    </div>
+  </div>
+</div>
 
 <!-- Modal Editar Tarea -->
 <div class="modal-bg" id="modal-tarea-edit" onclick="modalBgClick(event,this)">
@@ -1110,6 +1135,53 @@ async function saveInsumo(){var nombre=document.getElementById('min-nombre').val
 async function toggleInsumo(id,field){var item=(S.insumos||[]).find(function(x){return x.id===id});if(!item)return;item[field]=!item[field];await sbUpsert('crm_insumos',item);renderInsumos()}
 async function delInsumo(id){if(!confirm('Eliminar insumo?'))return;await sbDelete('crm_insumos',id);S.insumos=S.insumos.filter(function(x){return x.id!==id});renderInsumos()}
 
+
+// ===== COMPROBANTE =====
+var currentCompImg = '';
+
+function previewCompFile(input){
+  var file = input.files[0];
+  if(!file) return;
+  var label = document.getElementById('mg2-comp-file-label');
+  var preview = document.getElementById('mg2-comp-preview');
+  if(label) label.textContent = ' ' + file.name;
+  var reader = new FileReader();
+  reader.onload = function(e){
+    currentCompImg = e.target.result;
+    // Compress if too large
+    if(currentCompImg.length > 500000){
+      var img = new Image();
+      img.onload = function(){
+        var canvas = document.createElement('canvas');
+        var maxW = 800, maxH = 800;
+        var w = img.width, h = img.height;
+        if(w > maxW){ h = Math.round(h*maxW/w); w = maxW; }
+        if(h > maxH){ w = Math.round(w*maxH/h); h = maxH; }
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img,0,0,w,h);
+        currentCompImg = canvas.toDataURL('image/jpeg', 0.7);
+        if(preview){ preview.src = currentCompImg; preview.style.display='block'; }
+      };
+      img.src = currentCompImg;
+    } else {
+      if(preview){ preview.src = currentCompImg; preview.style.display='block'; }
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+function viewComprobante(gastoId){
+  var g = (S.gastos2||[]).find(function(x){return x.id===gastoId});
+  if(!g || !g.comp_img) return;
+  var title = document.getElementById('comp-view-title');
+  var cont = document.getElementById('comp-view-content');
+  var dl = document.getElementById('comp-download-btn');
+  if(title) title.textContent = 'Comprobante — ' + (g.quien||'') + ' — ' + (g.item||'');
+  if(cont) cont.innerHTML = '<img src="'+g.comp_img+'" style="max-width:100%;border-radius:10px">';
+  if(dl){ dl.href = g.comp_img; dl.download = 'comprobante-'+(g.quien||'equipo')+'.jpg'; }
+  openModal('modal-comp-view');
+}
+
 // ===== GASTOS EQUIPO =====
 function renderGastos(){
   var tb=document.getElementById('gastos-table');if(!tb)return;
@@ -1126,15 +1198,29 @@ function renderGastos(){
     tr.innerHTML='<td><span style="font-weight:700;color:'+col+'">'+(g.quien||'--')+'</span></td>'
       +'<td class="td-trunc"><strong>'+(g.item||'--')+'</strong></td>'
       +'<td style="font-weight:700;color:var(--goldl)">$'+Number(g.monto||0).toLocaleString('es-AR')+'</td>'
-      +'<td>'+fmtDate(g.fecha)+'</td>'+'<td class="td-trunc">'+(g.comp||'--')+'</td>'
+      +'<td>'+fmtDate(g.fecha)+'</td>'+'<td class="comp-cell-'+g.id+'">'+( g.comp||'--')+'</td>'
       +'<td><div class="toggle-check'+(g.reembolsado?' on':'')+'"></div></td>'
       +'<td><button class="btn-del">x</button></td>';
     tr.querySelector('.toggle-check').onclick=function(){toggleGasto2(g.id,'reembolsado')};
     tr.querySelector('.btn-del').onclick=function(){delGasto2(g.id)};
+    // Update comp cell with image button if exists
+    if(g.comp_img){
+      var compCell=tr.querySelector('.comp-cell-'+g.id);
+      if(compCell){
+        compCell.innerHTML='<div style="display:flex;align-items:center;gap:6px">'
+          +(g.comp?'<span style="font-size:10px;color:var(--txt2);max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+g.comp+'</span>':'')
+          +'<span class="comp-view-btn">📷 Ver</span></div>';
+        compCell.querySelector('.comp-view-btn').onclick=(function(gid){return function(){viewComprobante(gid)}})(g.id);
+      }
+    }
     tb.appendChild(tr);
   });
 }
-async function saveGasto2(){var v=function(id){return document.getElementById(id).value};if(!v('mg2-item').trim()){toast('Ingresa que se compro',true);return}var row={id:uid(),quien:v('mg2-quien'),item:v('mg2-item'),monto:v('mg2-monto'),fecha:v('mg2-fecha'),comp:v('mg2-comp'),reembolsado:false};await sbInsert('crm_gastos2',row);S.gastos2.unshift(row);closeModal('modal-gasto');toast('Gasto registrado');renderGastos()}
+async function saveGasto2(){var v=function(id){return document.getElementById(id).value};if(!v('mg2-item').trim()){toast('Ingresa que se compro',true);return}var row={id:uid(),quien:v('mg2-quien'),item:v('mg2-item'),monto:v('mg2-monto'),fecha:v('mg2-fecha'),comp:v('mg2-comp'),comp_img:currentCompImg||'',reembolsado:false};
+  currentCompImg='';
+  var prev=document.getElementById('mg2-comp-preview');if(prev){prev.style.display='none';prev.src='';}
+  var lbl=document.getElementById('mg2-comp-file-label');if(lbl)lbl.textContent=' Subir foto del ticket / factura';
+  var fi=document.getElementById('mg2-comp-file');if(fi)fi.value='';await sbInsert('crm_gastos2',row);S.gastos2.unshift(row);closeModal('modal-gasto');toast('Gasto registrado');renderGastos()}
 async function toggleGasto2(id,field){var item=(S.gastos2||[]).find(function(x){return x.id===id});if(!item)return;item[field]=!item[field];await sbUpsert('crm_gastos2',item);renderGastos()}
 async function delGasto2(id){if(!confirm('Eliminar gasto?'))return;await sbDelete('crm_gastos2',id);S.gastos2=S.gastos2.filter(function(x){return x.id!==id});renderGastos()}
 
