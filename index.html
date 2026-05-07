@@ -448,6 +448,24 @@ textarea{resize:vertical;min-height:80px}
 .file-upload-btn:hover{border-color:rgba(196,152,32,0.4);background:rgba(196,152,32,0.04);color:var(--gold)}
 .file-upload-preview{width:60px;height:60px;border-radius:8px;object-fit:cover;border:1px solid rgba(0,0,0,0.1);margin-top:8px}
 
+
+/* TAREAS GENERALES */
+.tarea-gen-card{background:#fff;border:1px solid rgba(0,0,0,0.09);border-radius:var(--brs);padding:14px 16px;margin-bottom:10px;transition:border-color 0.15s;box-shadow:0 1px 4px rgba(0,0,0,0.04)}
+.tarea-gen-card:hover{border-color:rgba(196,152,32,0.3)}
+.tarea-gen-card.done{opacity:0.5}
+.tarea-gen-card.done .tarea-gen-title{text-decoration:line-through;color:var(--txt3)}
+.tarea-gen-top{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px}
+.tarea-gen-title{font-size:13px;font-weight:600;color:var(--txt);flex:1;line-height:1.4}
+.tarea-gen-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.tarea-gen-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.archivo-btn{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;cursor:pointer;padding:4px 10px;border-radius:5px;border:1px dashed rgba(0,0,0,0.15);background:rgba(0,0,0,0.03);color:var(--txt2);transition:all 0.15s}
+.archivo-btn:hover{border-color:rgba(196,152,32,0.4);color:var(--gold);background:rgba(196,152,32,0.05)}
+.archivo-btn.has-file{border-style:solid;border-color:rgba(61,106,170,0.3);color:#3d6aaa;background:rgba(61,106,170,0.06)}
+.gen-section{background:linear-gradient(135deg,rgba(212,168,50,0.04),rgba(212,168,50,0.02));border:1px solid rgba(212,168,50,0.15);border-radius:var(--br);padding:20px;margin-top:24px}
+.gen-section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.gen-section-title{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:16px;text-transform:uppercase;color:var(--gold);letter-spacing:0.02em;display:flex;align-items:center;gap:8px}
+.gen-count{font-size:11px;font-weight:700;background:rgba(212,168,50,0.12);border:1px solid rgba(212,168,50,0.2);color:var(--gold);padding:2px 8px;border-radius:10px}
+
 </style>
 </head>
 <body>
@@ -518,6 +536,20 @@ textarea{resize:vertical;min-height:80px}
   <div id="tareas-person-tabs"></div>
   <div id="tareas-board" style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px;align-items:start"></div>
 </div>
+
+  <!-- TAREAS GENERALES DEL EQUIPO -->
+  <div class="gen-section" id="gen-section">
+    <div class="gen-section-header">
+      <div class="gen-section-title">
+        🤝 Tareas del Equipo
+        <span class="gen-count" id="gen-count">0</span>
+      </div>
+      <button class="btn btn-gold btn-sm" onclick="openGenModal()">+ Agregar tarea</button>
+    </div>
+    <div id="gen-tareas-list">
+      <div style="color:var(--txt3);font-size:12px;text-align:center;padding:20px">Sin tareas generales — cualquiera del equipo puede tomarlas</div>
+    </div>
+  </div>
 
 <!-- INSUMOS -->
 <div class="page" id="page-insumos">
@@ -639,6 +671,45 @@ textarea{resize:vertical;min-height:80px}
     <div class="modal-footer">
       <button class="btn btn-outline btn-sm" onclick="closeModal('modal-comp-view')">Cerrar</button>
       <a id="comp-download-btn" class="btn btn-gold btn-sm" download="comprobante.jpg">Descargar</a>
+    </div>
+  </div>
+</div>
+
+
+<!-- Modal Nueva Tarea General -->
+<div class="modal-bg" id="modal-tarea-gen" onclick="modalBgClick(event,this)">
+  <div class="modal">
+    <div class="modal-title" id="mtg-modal-title">+ Tarea del Equipo</div>
+    <input type="hidden" id="mtg-id">
+    <div class="form-row"><label>Descripcion</label><textarea id="mtg-titulo" placeholder="Ej: 08/05 retirar pipetas en Mercado Libre..." style="min-height:80px"></textarea></div>
+    <div class="form-grid2">
+      <div class="form-row"><label>Fecha</label><input type="date" id="mtg-fecha"></div>
+      <div class="form-row"><label>Prioridad</label>
+        <select id="mtg-prio"><option value="normal">Normal</option><option value="alta">Alta</option><option value="urgente">Urgente</option></select>
+      </div>
+    </div>
+    <div class="form-row"><label>Archivo / Foto adjunta (QR, factura, imagen)</label>
+      <label class="file-upload-btn" for="mtg-file">
+        <span>📎</span><span id="mtg-file-label"> Subir archivo o foto</span>
+      </label>
+      <input type="file" id="mtg-file" accept="image/*,application/pdf" style="display:none" onchange="previewGenFile(this)">
+      <img id="mtg-file-preview" class="file-upload-preview" style="display:none;margin-top:8px">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" onclick="closeModal('modal-tarea-gen');resetGenModal()">Cancelar</button>
+      <button class="btn btn-gold btn-sm" onclick="saveTareaGen()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Ver Archivo de Tarea -->
+<div class="modal-bg" id="modal-archivo-view" onclick="modalBgClick(event,this)">
+  <div class="modal">
+    <div class="modal-title" id="archivo-view-title">Archivo adjunto</div>
+    <div id="archivo-view-content" style="margin-bottom:16px;text-align:center"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" onclick="closeModal('modal-archivo-view')">Cerrar</button>
+      <a id="archivo-download-btn" class="btn btn-gold btn-sm" download="archivo">Descargar</a>
     </div>
   </div>
 </div>
@@ -990,6 +1061,207 @@ function renderDash(){
   }
 }
 
+
+// ===== TAREAS GENERALES =====
+var currentGenFile='', currentGenFileName='';
+
+function previewGenFile(input){
+  var file=input.files[0];if(!file)return;
+  var label=document.getElementById('mtg-file-label');
+  var preview=document.getElementById('mtg-file-preview');
+  if(label)label.textContent=' '+file.name;
+  currentGenFileName=file.name;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var result=e.target.result;
+    if(result.startsWith('data:image')&&result.length>600000){
+      var img=new Image();
+      img.onload=function(){
+        var canvas=document.createElement('canvas');
+        var mw=900,mh=900,w=img.width,h=img.height;
+        if(w>mw){h=Math.round(h*mw/w);w=mw}
+        if(h>mh){w=Math.round(w*mh/h);h=mh}
+        canvas.width=w;canvas.height=h;
+        canvas.getContext('2d').drawImage(img,0,0,w,h);
+        currentGenFile=canvas.toDataURL('image/jpeg',0.75);
+        if(preview){preview.src=currentGenFile;preview.style.display='block'}
+      };
+      img.src=result;
+    }else{
+      currentGenFile=result;
+      if(preview&&result.startsWith('data:image')){preview.src=result;preview.style.display='block'}
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+function openGenModal(tareaId){
+  var t=tareaId?(S.tareas||[]).find(function(x){return x.id===tareaId}):null;
+  var title=document.getElementById('mtg-modal-title');
+  var idEl=document.getElementById('mtg-id');
+  var tituloEl=document.getElementById('mtg-titulo');
+  var fechaEl=document.getElementById('mtg-fecha');
+  var prioEl=document.getElementById('mtg-prio');
+  var label=document.getElementById('mtg-file-label');
+  var preview=document.getElementById('mtg-file-preview');
+  currentGenFile='';currentGenFileName='';
+  if(t){
+    if(title)title.textContent='Editar Tarea';
+    if(idEl)idEl.value=t.id;
+    if(tituloEl)tituloEl.value=t.titulo||'';
+    if(fechaEl)fechaEl.value=t.fecha||'';
+    if(prioEl)prioEl.value=t.prio||'normal';
+    if(t.archivo){
+      currentGenFile=t.archivo;
+      currentGenFileName=t.archivo_nombre||'archivo';
+      if(label)label.textContent=' '+currentGenFileName;
+      if(preview&&t.archivo.startsWith('data:image')){preview.src=t.archivo;preview.style.display='block'}
+    }else{
+      if(label)label.textContent=' Subir archivo o foto';
+      if(preview){preview.style.display='none';preview.src=''}
+    }
+  }else{
+    if(title)title.textContent='+ Tarea del Equipo';
+    if(idEl)idEl.value='';
+    if(tituloEl)tituloEl.value='';
+    if(fechaEl)fechaEl.value='';
+    if(prioEl)prioEl.value='normal';
+    if(label)label.textContent=' Subir archivo o foto';
+    if(preview){preview.style.display='none';preview.src=''}
+  }
+  openModal('modal-tarea-gen');
+}
+
+function resetGenModal(){
+  currentGenFile='';currentGenFileName='';
+  var fi=document.getElementById('mtg-file');if(fi)fi.value='';
+}
+
+async function saveTareaGen(){
+  var v=function(id){return document.getElementById(id)&&document.getElementById(id).value||''};
+  var titulo=v('mtg-titulo').trim();
+  if(!titulo){toast('Escribi una descripcion',true);return}
+  var id=v('mtg-id');
+  var isEdit=!!id;
+  var archivo=currentGenFile||'';
+  var archivoNombre=currentGenFileName||'';
+  if(isEdit){
+    var t=(S.tareas||[]).find(function(x){return x.id===id});if(!t)return;
+    t.titulo=titulo;t.fecha=v('mtg-fecha');t.prio=v('mtg-prio');
+    if(archivo){t.archivo=archivo;t.archivo_nombre=archivoNombre}
+    await sbUpsert('crm_tareas',t);
+    toast('Tarea actualizada');
+  }else{
+    var row={id:uid(),titulo:titulo,miembro:'General',fecha:v('mtg-fecha'),prio:v('mtg-prio'),done:false,comments:[],archivo:archivo,archivo_nombre:archivoNombre};
+    await sbInsert('crm_tareas',row);
+    S.tareas.unshift(row);
+    toast('Tarea agregada');
+  }
+  closeModal('modal-tarea-gen');resetGenModal();
+  renderTareas();
+}
+
+function viewArchivo(tareaId){
+  var t=(S.tareas||[]).find(function(x){return x.id===tareaId});
+  if(!t||!t.archivo)return;
+  var title=document.getElementById('archivo-view-title');
+  var cont=document.getElementById('archivo-view-content');
+  var dl=document.getElementById('archivo-download-btn');
+  if(title)title.textContent=t.archivo_nombre||'Archivo adjunto';
+  if(cont){
+    if(t.archivo.startsWith('data:image')){
+      cont.innerHTML='<img src="'+t.archivo+'" style="max-width:100%;border-radius:10px">';
+    }else{
+      cont.innerHTML='<div style="padding:20px;font-size:13px;color:var(--txt2)">Archivo: '+(t.archivo_nombre||'archivo')+'</div>';
+    }
+  }
+  if(dl){dl.href=t.archivo;dl.download=t.archivo_nombre||'archivo'}
+  openModal('modal-archivo-view');
+}
+
+function renderGenTareas(){
+  var list=document.getElementById('gen-tareas-list');
+  var countEl=document.getElementById('gen-count');
+  if(!list)return;
+  var genTareas=(S.tareas||[]).filter(function(t){return t.miembro==='General'});
+  var pending=genTareas.filter(function(t){return !t.done}).length;
+  if(countEl)countEl.textContent=pending+' pend.';
+  if(!genTareas.length){
+    list.innerHTML='<div style="color:var(--txt3);font-size:12px;text-align:center;padding:20px">Sin tareas generales — cualquiera del equipo puede tomarlas</div>';
+    return;
+  }
+  list.innerHTML='';
+  var sorted=genTareas.slice().sort(function(a,b){if(a.done&&!b.done)return 1;if(!a.done&&b.done)return -1;return new Date(a.fecha||'9999')-new Date(b.fecha||'9999')});
+  sorted.forEach(function(t){
+    var prioClass=t.prio==='alta'?'prio-alta':t.prio==='urgente'?'prio-urgente':'prio-normal';
+    var card=document.createElement('div');
+    card.className='tarea-gen-card'+(t.done?' done':'');
+    card.innerHTML='<div class="tarea-gen-top">'
+      +'<div class="tarea-check'+(t.done?' done':'')+'"></div>'
+      +'<div class="tarea-gen-title">'+(t.titulo||'Sin descripcion')+'</div>'
+      +'<div style="display:flex;gap:3px;flex-shrink:0">'
+      +'<button style="background:transparent;border:1px solid rgba(61,106,170,0.3);color:#3d6aaa;font-size:10px;cursor:pointer;padding:2px 8px;border-radius:4px;font-weight:700">Edit</button>'
+      +'<button class="btn-del">×</button>'
+      +'</div></div>'
+      +'<div class="tarea-gen-meta">'
+      +(t.fecha?'<span class="tarea-date">'+fmtDate(t.fecha)+'</span>':'')
+      +'<span class="'+prioClass+'">'+(t.prio&&t.prio!=='normal'?t.prio:'')+'</span>'
+      +'</div>'
+      +'<div class="tarea-gen-actions">'
+      +'<label class="archivo-btn'+(t.archivo?' has-file':'')+'" for="gen-file-'+t.id+'">'
+      +(t.archivo?'📎 '+( t.archivo_nombre||'archivo'):'📎 Adjuntar archivo / foto')
+      +'</label>'
+      +'<input type="file" id="gen-file-'+t.id+'" accept="image/*,application/pdf" style="display:none">'
+      +(t.archivo?'<span style="font-size:10px;font-weight:700;color:#3d6aaa;cursor:pointer;padding:4px 8px;border-radius:5px;border:1px solid rgba(61,106,170,0.2);background:rgba(61,106,170,0.06)">👁 Ver</span>':'')
+      +'</div>';
+    // Event listeners
+    card.querySelector('.tarea-check').onclick=(function(tid){return function(){toggleGenTarea(tid)}})(t.id);
+    card.querySelectorAll('button')[0].onclick=(function(tid){return function(){openGenModal(tid)}})(t.id);
+    card.querySelectorAll('button')[1].onclick=(function(tid){return function(){delGenTarea(tid)}})(t.id);
+    var fileInput=card.querySelector('input[type=file]');
+    fileInput.onchange=(function(tid,lbl){return function(e){attachGenFile(e,tid,lbl)}})(t.id,card.querySelector('.archivo-btn'));
+    if(t.archivo){
+      var verBtn=card.querySelectorAll('span[style*="3d6aaa"]')[0];
+      if(verBtn)verBtn.onclick=(function(tid){return function(){viewArchivo(tid)}})(t.id);
+    }
+    list.appendChild(card);
+  });
+}
+
+async function attachGenFile(e,tareaId,labelEl){
+  var file=e.target.files[0];if(!file)return;
+  var t=(S.tareas||[]).find(function(x){return x.id===tareaId});if(!t)return;
+  var reader=new FileReader();
+  reader.onload=async function(ev){
+    var result=ev.target.result;
+    if(result.startsWith('data:image')&&result.length>600000){
+      var img=new Image();
+      img.onload=async function(){
+        var canvas=document.createElement('canvas');
+        var mw=900,mh=900,w=img.width,h=img.height;
+        if(w>mw){h=Math.round(h*mw/w);w=mw}
+        if(h>mh){w=Math.round(w*mh/h);h=mh}
+        canvas.width=w;canvas.height=h;
+        canvas.getContext('2d').drawImage(img,0,0,w,h);
+        t.archivo=canvas.toDataURL('image/jpeg',0.75);
+        t.archivo_nombre=file.name;
+        await sbUpsert('crm_tareas',t);
+        toast('Archivo guardado');renderTareas();
+      };
+      img.src=result;
+    }else{
+      t.archivo=result;t.archivo_nombre=file.name;
+      await sbUpsert('crm_tareas',t);
+      toast('Archivo guardado');renderTareas();
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+async function toggleGenTarea(id){var t=(S.tareas||[]).find(function(x){return x.id===id});if(!t)return;t.done=!t.done;await sbUpsert('crm_tareas',t);renderTareas()}
+async function delGenTarea(id){if(!confirm('Eliminar tarea?'))return;await sbDelete('crm_tareas',id);S.tareas=S.tareas.filter(function(x){return x.id!==id});renderTareas()}
+
+
 // ===== TAREAS =====
 var tareasFilter='todo',currentCommentTareaId=null,activePerson=TEAM[0];
 function setTareasFilter(f,el){tareasFilter=f;document.querySelectorAll('#tareas-time-tabs .tab').forEach(function(t){t.classList.remove('active')});el.classList.add('active');renderTareas()}
@@ -1059,6 +1331,7 @@ function renderTareas(){
     }
   });
   renderPersonTabs();
+  renderGenTareas();
 }
 
 async function saveTarea(){
