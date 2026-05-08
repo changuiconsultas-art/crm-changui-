@@ -498,6 +498,45 @@ textarea{resize:vertical;min-height:80px}
   .gen-result-grid{grid-template-columns:repeat(2,1fr)}
 }
 
+
+/* CONTABILIDAD */
+.conta-lock{position:absolute;inset:0;background:var(--bg);z-index:10;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px}
+.conta-lock-box{background:#fff;border:1px solid rgba(0,0,0,0.1);border-radius:var(--br);padding:32px;width:320px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,0.1)}
+.conta-lock-icon{font-size:40px;margin-bottom:8px}
+.conta-lock-title{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:22px;text-transform:uppercase;color:var(--txt);margin-bottom:4px}
+.conta-lock-sub{font-size:12px;color:var(--txt2);margin-bottom:20px}
+.conta-lock input{text-align:center;letter-spacing:0.1em;font-size:16px;font-weight:700}
+.conta-entity-tabs{display:flex;border-bottom:2px solid rgba(0,0,0,0.08);margin-bottom:20px;gap:0}
+.conta-entity-tab{padding:12px 20px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;cursor:pointer;color:var(--txt2);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all 0.15s;background:transparent;border-top:none;border-left:none;border-right:none}
+.conta-entity-tab:hover{color:var(--txt)}
+.conta-entity-tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+.conta-panel{display:none}.conta-panel.active{display:block}
+.iva-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px}
+.iva-card{border-radius:var(--brs);padding:14px 16px}
+.iva-card.favor{background:rgba(61,138,90,0.08);border:1px solid rgba(61,138,90,0.2)}
+.iva-card.pagar{background:rgba(184,72,72,0.08);border:1px solid rgba(184,72,72,0.2)}
+.iva-card.neto{background:rgba(61,106,170,0.08);border:1px solid rgba(61,106,170,0.2)}
+.iva-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px}
+.iva-label.favor{color:#3d8a5a}.iva-label.pagar{color:#b84848}.iva-label.neto{color:#3d6aaa}
+.iva-value{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:22px}
+.iva-value.favor{color:#3d8a5a}.iva-value.pagar{color:#b84848}.iva-value.neto{color:#3d6aaa}
+.mono-progress{height:12px;background:rgba(0,0,0,0.06);border-radius:6px;overflow:hidden;margin:8px 0}
+.mono-bar{height:100%;border-radius:6px;transition:width 0.5s ease}
+.pago-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:var(--brs);border:1px solid rgba(0,0,0,0.07);background:#fff;margin-bottom:8px;transition:all 0.15s}
+.pago-item.pagado{opacity:0.5}
+.pago-item.pagado .pago-nombre{text-decoration:line-through;color:var(--txt3)}
+.pago-nombre{font-size:13px;font-weight:600;color:var(--txt);flex:1}
+.pago-venc{font-size:10px;color:var(--txt3)}
+.pago-monto{font-size:13px;font-weight:700;color:var(--gold)}
+.conta-alert{background:rgba(184,72,72,0.08);border:1px solid rgba(184,72,72,0.2);border-radius:var(--brs);padding:12px 16px;margin-bottom:14px;font-size:12px;color:#b84848;display:flex;align-items:center;gap:8px}
+.conta-warn{background:rgba(192,136,48,0.08);border:1px solid rgba(192,136,48,0.2);border-radius:var(--brs);padding:12px 16px;margin-bottom:14px;font-size:12px;color:#c08830;display:flex;align-items:center;gap:8px}
+.drive-link{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:var(--brs);background:rgba(61,106,170,0.08);border:1px solid rgba(61,106,170,0.2);color:#3d6aaa;font-size:12px;font-weight:700;text-decoration:none;transition:all 0.15s}
+.drive-link:hover{background:rgba(61,106,170,0.14)}
+@media(max-width:768px){
+  .iva-grid{grid-template-columns:1fr 1fr}
+  .conta-entity-tab{padding:10px 12px;font-size:11px}
+}
+
 </style>
 </head>
 <body>
@@ -525,6 +564,7 @@ textarea{resize:vertical;min-height:80px}
     <div class="sb-section-label">Agencia</div>
     <div class="nav-item" onclick="nav('metricas',this)"><div class="nav-dot"></div><span class="nav-text">Metricas IA</span></div>
     <div class="sb-section-label">Sistema</div>
+    <div class="nav-item" onclick="nav('contabilidad',this)"><div class="nav-dot"></div><span class="nav-text">Contabilidad</span></div>
     <div class="nav-item" onclick="nav('exportar',this)"><div class="nav-dot"></div><span class="nav-text">Exportar / Importar</span></div>
     <div style="padding:10px 8px;border-top:1px solid var(--border);margin-top:8px">
       <div class="nav-item" onclick="refreshData()" style="justify-content:center">
@@ -771,6 +811,109 @@ textarea{resize:vertical;min-height:80px}
 
 </div>
 
+<!-- CONTABILIDAD -->
+<div class="page" id="page-contabilidad" style="position:relative;min-height:80vh">
+  <div class="conta-lock" id="conta-lock">
+    <div class="conta-lock-box">
+      <div class="conta-lock-icon">🔐</div>
+      <div class="conta-lock-title">Contabilidad</div>
+      <div class="conta-lock-sub">Ingresa la contrasena para continuar</div>
+      <input type="password" id="conta-pwd" placeholder="Contrasena..." onkeydown="if(event.key==='Enter')checkContaPass()" style="margin-bottom:12px">
+      <button class="btn btn-gold" style="width:100%;justify-content:center;min-height:44px" onclick="checkContaPass()">Ingresar</button>
+      <div id="conta-pwd-err" style="color:#b84848;font-size:11px;margin-top:8px;display:none">Contrasena incorrecta</div>
+    </div>
+  </div>
+  <div id="conta-content" style="display:none">
+    <div class="page-header" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+      <div><div class="page-title">Contabilidad</div><div class="page-sub">Borra Verde SRL · Joaquin De Tomaso · Tomas Zaragoza</div></div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <a href="https://drive.google.com/drive/folders/1lY2_ZjvfbR5BSD0qLNN7iQ6xjIKYcozH" target="_blank" class="drive-link">📁 Abrir Drive Contaduria</a>
+        <button class="btn btn-outline btn-sm" onclick="lockContabilidad()">Cerrar sesion</button>
+      </div>
+    </div>
+    <div id="conta-pagos-alert" style="margin-bottom:14px"></div>
+    <div class="conta-entity-tabs">
+      <button class="conta-entity-tab active" onclick="switchContaTab('borra',this)">🏢 Borra Verde SRL</button>
+      <button class="conta-entity-tab" onclick="switchContaTab('joaquin',this)">👤 Joaquin</button>
+      <button class="conta-entity-tab" onclick="switchContaTab('tomas',this)">👤 Tomas</button>
+      <button class="conta-entity-tab" onclick="switchContaTab('pagos',this)">💳 Pagos fijos</button>
+    </div>
+    <!-- BORRA VERDE -->
+    <div class="conta-panel active" id="conta-panel-borra">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+        <div style="font-size:11px;color:var(--txt2)">CUIT: 30-71869008-7 · IVA Responsable Inscripto</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <select id="borra-mes-filter" onchange="renderContaBorra()" style="font-size:12px;padding:6px 10px;width:auto"><option value="">Todos los meses</option></select>
+          <select id="borra-anio-filter" onchange="renderContaBorra()" style="font-size:12px;padding:6px 10px;width:auto"></select>
+          <button class="btn btn-gold btn-sm" onclick="setFacturaEntidad('borra_verde');openModal('modal-factura')">+ Cargar factura</button>
+        </div>
+      </div>
+      <div class="iva-grid">
+        <div class="iva-card favor"><div class="iva-label favor">IVA a Favor (Credito)</div><div class="iva-value favor" id="borra-iva-favor">$0</div><div style="font-size:10px;color:var(--txt3);margin-top:4px">De compras</div></div>
+        <div class="iva-card pagar"><div class="iva-label pagar">IVA a Pagar (Debito)</div><div class="iva-value pagar" id="borra-iva-pagar">$0</div><div style="font-size:10px;color:var(--txt3);margin-top:4px">De ventas</div></div>
+        <div class="iva-card neto"><div class="iva-label neto">IVA Neto</div><div class="iva-value neto" id="borra-iva-neto">$0</div><div id="borra-iva-neto-label" style="font-size:10px;color:var(--txt3);margin-top:4px">Diferencia</div></div>
+      </div>
+      <div class="card"><div class="tbl-wrap"><table><thead><tr><th>Fecha</th><th>Tipo</th><th>Mov.</th><th>N</th><th>Cliente/Proveedor</th><th>Concepto</th><th>Sin IVA</th><th>IVA 21%</th><th>Total</th><th></th></tr></thead><tbody id="borra-facturas-table"></tbody></table></div></div>
+    </div>
+    <!-- JOAQUIN -->
+    <div class="conta-panel" id="conta-panel-joaquin">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+        <div style="font-size:11px;color:var(--txt2)">CUIT: 20-37806973-5 · Monotributista Categoria F · Limite: $9.450.000 anuales</div>
+        <div style="display:flex;gap:8px">
+          <select id="joaquin-anio-filter" onchange="renderContaJoaquin()" style="font-size:12px;padding:6px 10px;width:auto"></select>
+          <button class="btn btn-gold btn-sm" onclick="setFacturaEntidad('joaquin');openModal('modal-factura')">+ Cargar factura</button>
+        </div>
+      </div>
+      <div id="joaquin-mono-alert"></div>
+      <div class="card" style="margin-bottom:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div class="sec-title">Facturacion anual — Categoria F</div>
+          <div id="joaquin-mono-pct" style="font-size:13px;font-weight:700;color:var(--gold)">0%</div>
+        </div>
+        <div class="mono-progress"><div class="mono-bar" id="joaquin-mono-bar" style="width:0%;background:var(--green)"></div></div>
+        <div style="display:flex;justify-content:space-between;margin-top:6px">
+          <div style="font-size:11px;color:var(--txt2)">Facturado: <strong id="joaquin-total-anual">$0</strong></div>
+          <div style="font-size:11px;color:var(--txt2)">Limite Cat. F: <strong>$9.450.000</strong></div>
+        </div>
+        <div style="margin-top:12px;display:grid;grid-template-columns:repeat(6,1fr);gap:6px" id="joaquin-mes-grid"></div>
+      </div>
+      <div class="card"><div class="tbl-wrap"><table><thead><tr><th>Fecha</th><th>N</th><th>Cliente</th><th>Concepto</th><th>Monto</th><th></th></tr></thead><tbody id="joaquin-facturas-table"></tbody></table></div></div>
+    </div>
+    <!-- TOMAS -->
+    <div class="conta-panel" id="conta-panel-tomas">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+        <div style="font-size:11px;color:var(--txt2)">CUIT: 20-41556467-9 · Monotributista Categoria D · Limite: $5.765.000 anuales</div>
+        <div style="display:flex;gap:8px">
+          <select id="tomas-anio-filter" onchange="renderContaTomas()" style="font-size:12px;padding:6px 10px;width:auto"></select>
+          <button class="btn btn-gold btn-sm" onclick="setFacturaEntidad('tomas');openModal('modal-factura')">+ Cargar factura</button>
+        </div>
+      </div>
+      <div id="tomas-mono-alert"></div>
+      <div class="card" style="margin-bottom:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div class="sec-title">Facturacion anual — Categoria D</div>
+          <div id="tomas-mono-pct" style="font-size:13px;font-weight:700;color:var(--gold)">0%</div>
+        </div>
+        <div class="mono-progress"><div class="mono-bar" id="tomas-mono-bar" style="width:0%;background:var(--green)"></div></div>
+        <div style="display:flex;justify-content:space-between;margin-top:6px">
+          <div style="font-size:11px;color:var(--txt2)">Facturado: <strong id="tomas-total-anual">$0</strong></div>
+          <div style="font-size:11px;color:var(--txt2)">Limite Cat. D: <strong>$5.765.000</strong></div>
+        </div>
+        <div style="margin-top:12px;display:grid;grid-template-columns:repeat(6,1fr);gap:6px" id="tomas-mes-grid"></div>
+      </div>
+      <div class="card"><div class="tbl-wrap"><table><thead><tr><th>Fecha</th><th>N</th><th>Cliente</th><th>Concepto</th><th>Monto</th><th></th></tr></thead><tbody id="tomas-facturas-table"></tbody></table></div></div>
+    </div>
+    <!-- PAGOS FIJOS -->
+    <div class="conta-panel" id="conta-panel-pagos">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
+        <div id="pagos-mes-label" style="font-size:14px;font-weight:700;color:var(--txt)"></div>
+        <button class="btn btn-gold btn-sm" onclick="openModal('modal-pago-fijo')">+ Agregar pago</button>
+      </div>
+      <div id="pagos-fijos-list"></div>
+    </div>
+  </div>
+</div>
+
 </main>
 
 <!-- MODALS -->
@@ -933,6 +1076,93 @@ textarea{resize:vertical;min-height:80px}
   </div>
 </div>
 
+
+<!-- Modal Cargar Factura -->
+<div class="modal-bg" id="modal-factura" onclick="modalBgClick(event,this)">
+  <div class="modal">
+    <div class="modal-title" id="mf-title">+ Cargar Factura</div>
+    <input type="hidden" id="mf-entidad">
+    <div class="form-grid2">
+      <div class="form-row"><label>Tipo de factura</label>
+        <select id="mf-tipo" onchange="updateIvaFields()">
+          <option value="A">Factura A</option>
+          <option value="B">Factura B</option>
+        </select>
+      </div>
+      <div class="form-row"><label>Movimiento</label>
+        <select id="mf-mov" onchange="updateIvaFields()">
+          <option value="venta">Venta (emitida)</option>
+          <option value="compra">Compra (recibida)</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-grid2">
+      <div class="form-row"><label>Fecha</label><input type="date" id="mf-fecha"></div>
+      <div class="form-row"><label>Numero de factura</label><input type="text" id="mf-numero" placeholder="0001-00001234"></div>
+    </div>
+    <div class="form-row"><label>Cliente / Proveedor</label><input type="text" id="mf-cliente" placeholder="Nombre o razon social"></div>
+    <div class="form-row"><label>Concepto</label><input type="text" id="mf-concepto" placeholder="Descripcion del servicio o producto"></div>
+    <div id="mf-iva-section">
+      <div class="form-grid2">
+        <div class="form-row"><label>Monto sin IVA ($)</label><input type="number" id="mf-sin-iva" placeholder="0" oninput="calcIva()"></div>
+        <div class="form-row"><label>IVA 21% (auto)</label><input type="number" id="mf-iva" placeholder="0" readonly style="background:rgba(0,0,0,0.05)"></div>
+      </div>
+    </div>
+    <div id="mf-mono-section" style="display:none">
+      <div class="form-row"><label>Monto total ($)</label><input type="number" id="mf-monto-mono" placeholder="0"></div>
+    </div>
+    <div class="form-row"><label>Archivo / Foto de la factura (opcional)</label>
+      <label class="file-upload-btn" for="mf-file"><span>📎</span><span id="mf-file-label"> Subir factura</span></label>
+      <input type="file" id="mf-file" accept="image/*,application/pdf" style="display:none" onchange="handleFacturaFile(this)">
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" onclick="closeModal('modal-factura')">Cancelar</button>
+      <button class="btn btn-gold btn-sm" onclick="saveFactura()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Pago Fijo -->
+<div class="modal-bg" id="modal-pago-fijo" onclick="modalBgClick(event,this)">
+  <div class="modal">
+    <div class="modal-title">+ Pago Fijo Mensual</div>
+    <div class="form-row"><label>Nombre del pago</label>
+      <select id="mpf-nombre">
+        <option>Sueldos</option>
+        <option>Alquiler</option>
+        <option>Monotributo Joaquin</option>
+        <option>Monotributo Tomas</option>
+        <option>Agencia de Ads</option>
+        <option>Contador</option>
+        <option>IVA</option>
+        <option>Autonomo</option>
+        <option>Otro</option>
+      </select>
+    </div>
+    <div id="mpf-otro-row" style="display:none"><div class="form-row"><label>Descripcion</label><input type="text" id="mpf-otro-txt" placeholder="Nombre del pago"></div></div>
+    <div class="form-grid2">
+      <div class="form-row"><label>Monto estimado ($)</label><input type="number" id="mpf-monto" placeholder="0"></div>
+      <div class="form-row"><label>Vence el dia</label><input type="number" id="mpf-dia" placeholder="Ej: 5" min="1" max="31"></div>
+    </div>
+    <div class="form-grid2">
+      <div class="form-row"><label>Mes</label>
+        <select id="mpf-mes">
+          <option value="1">Enero</option><option value="2">Febrero</option><option value="3">Marzo</option>
+          <option value="4">Abril</option><option value="5">Mayo</option><option value="6">Junio</option>
+          <option value="7">Julio</option><option value="8">Agosto</option><option value="9">Septiembre</option>
+          <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+        </select>
+      </div>
+      <div class="form-row"><label>Ano</label><input type="number" id="mpf-anio" placeholder="2026"></div>
+    </div>
+    <div class="form-row"><label>Notas (opcional)</label><input type="text" id="mpf-notas" placeholder="Ej: transferencia a Juan"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" onclick="closeModal('modal-pago-fijo')">Cancelar</button>
+      <button class="btn btn-gold btn-sm" onclick="savePagoFijo()">Guardar</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast-container"></div>
 <script>
 // SUPABASE
@@ -981,7 +1211,7 @@ function stateClass(s){return{Idea:'bgy','Guion listo':'bb',Grabando:'ba',Editan
 function fmtMoney(u,a,e){var p=[];if(u&&Number(u)!=0)p.push('$'+Number(u).toLocaleString('es-AR'));if(a&&Number(a)!=0)p.push('ARS '+Number(a).toLocaleString('es-AR'));if(e&&Number(e)!=0)p.push('EUR '+Number(e).toLocaleString('es-AR'));return p.join(' / ')||'--'}
 
 // STATE
-var S={tasks:[],found:{avatar:{},offer:{}},foundId:null,content:[],hists:[],refs:[],mets:[],leads:[],clients:[],ing:[],gas:[],angulos:[],tareas:[],insumos:[],pedidos:[],referencias:[],gastos2:[]};
+var S={tasks:[],found:{avatar:{},offer:{}},foundId:null,content:[],hists:[],refs:[],mets:[],leads:[],clients:[],ing:[],gas:[],angulos:[],tareas:[],insumos:[],pedidos:[],referencias:[],gastos2:[],facturas:[],pagos_fijos:[]};
 var TEAM=['Sol','Colo','Guada','Deto','Tomi'];
 var TEAM_COLORS=['#d4a832','#3d8a5a','#7a4ab8','#3d6aaa','#b84848'];
 var ESTADOS_PEDIDO=['Diseño shablón enviado','Shablón listo','Tubos estampados','Bases pegadas','Envío embalado'];
@@ -1007,7 +1237,9 @@ async function loadAll(){
       sbGet('crm_ing','&order=created_at.desc'),sbGet('crm_gas','&order=created_at.desc'),
       sbGet('crm_angulos','&order=created_at.desc'),sbGet('crm_tareas','&order=created_at.desc'),
       sbGet('crm_insumos','&order=created_at.desc'),sbGet('crm_pedidos','&order=created_at.desc'),
-      sbGet('crm_referencias','&order=created_at.desc'),sbGet('crm_gastos2','&order=created_at.desc')
+      sbGet('crm_referencias','&order=created_at.desc'),sbGet('crm_gastos2','&order=created_at.desc'),
+      sbGet('crm_facturas','&order=created_at.desc'),
+      sbGet('crm_pagos_fijos','&order=created_at.desc')
     ]);
     var tasks=results[0],found=results[1];
     S.tasks=tasks||[];
@@ -1019,7 +1251,7 @@ async function loadAll(){
     S.mets=results[5]||[];S.leads=results[6]||[];S.clients=results[7]||[];
     S.ing=results[8]||[];S.gas=results[9]||[];S.angulos=results[10]||[];
     S.tareas=(results[11]||[]).map(function(t){return Object.assign({},t,{comments:Array.isArray(t.comments)?t.comments:[]})});
-    S.insumos=results[12]||[];S.pedidos=results[13]||[];S.referencias=results[14]||[];S.gastos2=results[15]||[];
+    S.insumos=results[12]||[];S.pedidos=results[13]||[];S.referencias=results[14]||[];S.gastos2=results[15]||[];S.facturas=results[16]||[];S.pagos_fijos=results[17]||[];
     document.getElementById('loader').style.display='none';
     renderDash();
     loadAiKey();
@@ -1042,14 +1274,16 @@ async function refreshData(){
       sbGet('crm_ing','&order=created_at.desc'),sbGet('crm_gas','&order=created_at.desc'),
       sbGet('crm_angulos','&order=created_at.desc'),sbGet('crm_tareas','&order=created_at.desc'),
       sbGet('crm_insumos','&order=created_at.desc'),sbGet('crm_pedidos','&order=created_at.desc'),
-      sbGet('crm_referencias','&order=created_at.desc'),sbGet('crm_gastos2','&order=created_at.desc')
+      sbGet('crm_referencias','&order=created_at.desc'),sbGet('crm_gastos2','&order=created_at.desc'),
+      sbGet('crm_facturas','&order=created_at.desc'),
+      sbGet('crm_pagos_fijos','&order=created_at.desc')
     ]);
     S.content=results[0]||[];S.hists=results[1]||[];S.refs=results[2]||[];
     S.mets=results[3]||[];S.leads=results[4]||[];S.clients=results[5]||[];
     S.ing=results[6]||[];S.gas=results[7]||[];S.angulos=results[8]||[];
     S.tareas=(results[9]||[]).map(function(t){return Object.assign({},t,{comments:Array.isArray(t.comments)?t.comments:[]})});
     S.insumos=results[10]||[];S.pedidos=results[11]||[];S.referencias=results[12]||[];S.gastos2=results[13]||[];
-    var renders={dashboard:renderDash,tareas:renderTareas,insumos:renderInsumos,gastos:renderGastos,pedidos:renderPedidos,referencia:renderReferencia,contenido:renderContent,metricas:renderMetricas,exportar:renderExportar,generador:renderGenerador};
+    var renders={dashboard:renderDash,tareas:renderTareas,insumos:renderInsumos,gastos:renderGastos,pedidos:renderPedidos,referencia:renderReferencia,contenido:renderContent,metricas:renderMetricas,exportar:renderExportar,generador:renderGenerador,contabilidad:renderContabilidad};
     if(renders[currentPage])renders[currentPage]();
     var now=new Date();var ls=document.getElementById('last-sync');
     if(ls){ls.style.maxHeight='20px';ls.style.opacity='1';ls.textContent='Sync '+now.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})}
@@ -1069,7 +1303,7 @@ function nav(id,el){
   document.getElementById('page-'+id).classList.add('active');
   if(el)el.classList.add('active');
   currentPage=id;
-  var renders={dashboard:renderDash,tareas:renderTareas,insumos:renderInsumos,gastos:renderGastos,pedidos:renderPedidos,referencia:renderReferencia,contenido:renderContent,metricas:renderMetricas,exportar:renderExportar,generador:renderGenerador};
+  var renders={dashboard:renderDash,tareas:renderTareas,insumos:renderInsumos,gastos:renderGastos,pedidos:renderPedidos,referencia:renderReferencia,contenido:renderContent,metricas:renderMetricas,exportar:renderExportar,generador:renderGenerador,contabilidad:renderContabilidad};
   if(renders[id])renders[id]();
 }
 function openModal(id){document.getElementById(id).classList.add('open')}
@@ -2119,6 +2353,350 @@ function renderGenResults(){
 function clearGenResults(){
   genResults=[];
   renderGenResults();
+}
+
+
+// ===== CONTABILIDAD =====
+var CONTA_PASS='Eldetoyelzara';
+var contaUnlocked=false;
+var currentFacturaEntidad='borra_verde';
+var currentFacturaFile='';
+var MESES_NOMBRES=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+var MESES_FULL=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+var MONO_LIMITE_JOAQUIN=9450000;
+var MONO_LIMITE_TOMAS=5765000;
+
+function renderContabilidad(){
+  if(!contaUnlocked){
+    document.getElementById('conta-lock').style.cssText='';
+    document.getElementById('conta-content').style.display='none';
+    return;
+  }
+  document.getElementById('conta-lock').style.display='none';
+  document.getElementById('conta-content').style.display='block';
+  populateAnioFilters();
+  populateMesFilter();
+  renderContaBorra();
+  renderContaJoaquin();
+  renderContaTomas();
+  renderPagosFijos();
+  renderContaPagosAlert();
+}
+
+function checkContaPass(){
+  var val=document.getElementById('conta-pwd').value;
+  var err=document.getElementById('conta-pwd-err');
+  if(val===CONTA_PASS){
+    contaUnlocked=true;
+    err.style.display='none';
+    renderContabilidad();
+  }else{
+    err.style.display='block';
+    document.getElementById('conta-pwd').value='';
+  }
+}
+
+function lockContabilidad(){
+  contaUnlocked=false;
+  document.getElementById('conta-lock').style.cssText='';
+  document.getElementById('conta-content').style.display='none';
+  document.getElementById('conta-pwd').value='';
+}
+
+function switchContaTab(tab,el){
+  document.querySelectorAll('.conta-entity-tab').forEach(function(b){b.classList.remove('active')});
+  document.querySelectorAll('.conta-panel').forEach(function(p){p.classList.remove('active')});
+  el.classList.add('active');
+  document.getElementById('conta-panel-'+tab).classList.add('active');
+  if(tab==='pagos')renderPagosFijos();
+}
+
+function populateAnioFilters(){
+  var now=new Date();var anioActual=now.getFullYear();
+  ['borra-anio-filter','joaquin-anio-filter','tomas-anio-filter'].forEach(function(id){
+    var sel=document.getElementById(id);if(!sel)return;
+    sel.innerHTML='';
+    for(var y=anioActual;y>=anioActual-3;y--){
+      var opt=document.createElement('option');
+      opt.value=y;opt.textContent=y;
+      if(y===anioActual)opt.selected=true;
+      sel.appendChild(opt);
+    }
+  });
+  var mpfAnio=document.getElementById('mpf-anio');
+  if(mpfAnio)mpfAnio.value=anioActual;
+  var mpfMes=document.getElementById('mpf-mes');
+  if(mpfMes)mpfMes.value=now.getMonth()+1;
+}
+
+function populateMesFilter(){
+  var sel=document.getElementById('borra-mes-filter');if(!sel)return;
+  sel.innerHTML='<option value="">Todos los meses</option>';
+  MESES_FULL.forEach(function(m,i){
+    var opt=document.createElement('option');opt.value=i+1;opt.textContent=m;sel.appendChild(opt);
+  });
+}
+
+function getFiltradas(entidad){
+  return (S.facturas||[]).filter(function(f){return f.entidad===entidad});
+}
+
+function fmtPeso(n){return '$'+Math.round(n||0).toLocaleString('es-AR')}
+
+// ── BORRA VERDE ──
+function renderContaBorra(){
+  var mes=document.getElementById('borra-mes-filter')&&document.getElementById('borra-mes-filter').value;
+  var anio=document.getElementById('borra-anio-filter')&&document.getElementById('borra-anio-filter').value;
+  var facturas=getFiltradas('borra_verde').filter(function(f){
+    if(anio&&f.fecha&&!f.fecha.startsWith(anio))return false;
+    if(mes&&f.fecha){var m=parseInt(f.fecha.split('-')[1]);if(m!==parseInt(mes))return false}
+    return true;
+  });
+  var ivaFavor=facturas.filter(function(f){return f.tipo_mov==='compra'}).reduce(function(s,f){return s+(Number(f.iva)||0)},0);
+  var ivaPagar=facturas.filter(function(f){return f.tipo_mov==='venta'}).reduce(function(s,f){return s+(Number(f.iva)||0)},0);
+  var ivaNeto=ivaPagar-ivaFavor;
+  document.getElementById('borra-iva-favor').textContent=fmtPeso(ivaFavor);
+  document.getElementById('borra-iva-pagar').textContent=fmtPeso(ivaPagar);
+  document.getElementById('borra-iva-neto').textContent=fmtPeso(Math.abs(ivaNeto));
+  var netoEl=document.getElementById('borra-iva-neto');
+  var netoLabel=document.getElementById('borra-iva-neto-label');
+  if(ivaNeto>0){netoEl.style.color='#b84848';if(netoLabel)netoLabel.textContent='A pagar a AFIP'}
+  else if(ivaNeto<0){netoEl.style.color='#3d8a5a';if(netoLabel)netoLabel.textContent='Saldo a favor'}
+  else{netoEl.style.color='var(--txt2)';if(netoLabel)netoLabel.textContent='Equilibrado'}
+  var tb=document.getElementById('borra-facturas-table');
+  if(!tb)return;
+  if(!facturas.length){tb.innerHTML='<tr><td colspan="10" style="color:var(--txt3);text-align:center;padding:20px">Sin facturas cargadas</td></tr>';return}
+  tb.innerHTML='';
+  facturas.sort(function(a,b){return (b.fecha||'').localeCompare(a.fecha||'')}).forEach(function(f){
+    var tr=document.createElement('tr');
+    var total=(Number(f.monto_sin_iva)||0)+(Number(f.iva)||0);
+    tr.innerHTML='<td>'+fmtDate(f.fecha)+'</td>'
+      +'<td><span class="'+(f.tipo==='A'?'bb':'bg')+'">'+f.tipo+'</span></td>'
+      +'<td><span class="'+(f.tipo_mov==='venta'?'bgr':'ba')+'">'+(f.tipo_mov==='venta'?'Venta':'Compra')+'</span></td>'
+      +'<td style="font-size:10px">'+(f.numero||'--')+'</td>'
+      +'<td class="td-trunc">'+(f.cliente_proveedor||'--')+'</td>'
+      +'<td class="td-trunc">'+(f.concepto||'--')+'</td>'
+      +'<td style="font-weight:600">'+fmtPeso(f.monto_sin_iva)+'</td>'
+      +'<td>'+fmtPeso(f.iva)+'</td>'
+      +'<td style="font-weight:700;color:var(--gold)">'+fmtPeso(total)+'</td>'
+      +'<td><button class="btn-del">x</button></td>';
+    tr.querySelector('.btn-del').onclick=(function(id){return function(){delFactura(id)}})(f.id);
+    tb.appendChild(tr);
+  });
+}
+
+// ── MONOTRIBUTISTAS ──
+function renderMonoPanel(entidad,anioSelId,totalId,pctId,barId,alertId,mesGridId,tableId,limite){
+  var anio=document.getElementById(anioSelId)&&document.getElementById(anioSelId).value||new Date().getFullYear().toString();
+  var facturas=getFiltradas(entidad).filter(function(f){return f.fecha&&f.fecha.startsWith(anio)});
+  var total=facturas.reduce(function(s,f){return s+(Number(f.monto)||0)},0);
+  var pct=Math.min(100,Math.round((total/limite)*100));
+  document.getElementById(totalId).textContent=fmtPeso(total);
+  document.getElementById(pctId).textContent=pct+'%';
+  var bar=document.getElementById(barId);
+  if(bar){bar.style.width=pct+'%';bar.style.background=pct>=90?'#b84848':pct>=70?'#c08830':'#3d8a5a'}
+  var alertEl=document.getElementById(alertId);
+  if(alertEl){
+    if(pct>=90)alertEl.innerHTML='<div class="conta-alert">⚠ Superaste el 90% del limite de categoria. Es momento de recategorizarse.</div>';
+    else if(pct>=70)alertEl.innerHTML='<div class="conta-warn">⚡ Estas al '+pct+'% del limite. Falta '+fmtPeso(limite-total)+' para recategorizarte.</div>';
+    else alertEl.innerHTML='';
+  }
+  var grid=document.getElementById(mesGridId);
+  if(grid){
+    grid.innerHTML='';
+    for(var m=1;m<=12;m++){
+      var mFacts=facturas.filter(function(f){return parseInt(f.fecha.split('-')[1])===m});
+      var mTotal=mFacts.reduce(function(s,f){return s+(Number(f.monto)||0)},0);
+      var div=document.createElement('div');
+      div.style.cssText='background:rgba(0,0,0,0.04);border-radius:6px;padding:6px 4px;text-align:center';
+      div.innerHTML='<div style="font-size:9px;color:var(--txt3);font-weight:700">'+MESES_NOMBRES[m-1]+'</div>'
+        +'<div style="font-size:10px;font-weight:700;color:'+(mTotal>0?'var(--gold)':'var(--txt3)')+'">'+( mTotal>0?'$'+(mTotal/1000).toFixed(0)+'k':'--')+'</div>';
+      grid.appendChild(div);
+    }
+  }
+  var tb=document.getElementById(tableId);
+  if(!tb)return;
+  if(!facturas.length){tb.innerHTML='<tr><td colspan="6" style="color:var(--txt3);text-align:center;padding:20px">Sin facturas cargadas</td></tr>';return}
+  tb.innerHTML='';
+  facturas.sort(function(a,b){return (b.fecha||'').localeCompare(a.fecha||'')}).forEach(function(f){
+    var tr=document.createElement('tr');
+    tr.innerHTML='<td>'+fmtDate(f.fecha)+'</td>'
+      +'<td style="font-size:10px">'+(f.numero||'--')+'</td>'
+      +'<td class="td-trunc">'+(f.cliente_proveedor||'--')+'</td>'
+      +'<td class="td-trunc">'+(f.concepto||'--')+'</td>'
+      +'<td style="font-weight:700;color:var(--gold)">'+fmtPeso(f.monto)+'</td>'
+      +'<td><button class="btn-del">x</button></td>';
+    tr.querySelector('.btn-del').onclick=(function(id){return function(){delFactura(id)}})(f.id);
+    tb.appendChild(tr);
+  });
+}
+function renderContaJoaquin(){renderMonoPanel('joaquin','joaquin-anio-filter','joaquin-total-anual','joaquin-mono-pct','joaquin-mono-bar','joaquin-mono-alert','joaquin-mes-grid','joaquin-facturas-table',MONO_LIMITE_JOAQUIN)}
+function renderContaTomas(){renderMonoPanel('tomas','tomas-anio-filter','tomas-total-anual','tomas-mono-pct','tomas-mono-bar','tomas-mono-alert','tomas-mes-grid','tomas-facturas-table',MONO_LIMITE_TOMAS)}
+
+// ── FACTURAS ──
+function setFacturaEntidad(entidad){
+  currentFacturaEntidad=entidad;
+  var titleMap={borra_verde:'Factura — Borra Verde SRL',joaquin:'Factura B — Joaquin De Tomaso',tomas:'Factura B — Tomas Zaragoza'};
+  var title=document.getElementById('mf-title');if(title)title.textContent='+ '+titleMap[entidad];
+  var ivaSection=document.getElementById('mf-iva-section');
+  var monoSection=document.getElementById('mf-mono-section');
+  var tipoRow=document.getElementById('mf-tipo')&&document.getElementById('mf-tipo').closest('.form-row');
+  var movRow=document.getElementById('mf-mov')&&document.getElementById('mf-mov').closest('.form-row');
+  if(entidad==='borra_verde'){
+    if(ivaSection)ivaSection.style.display='block';
+    if(monoSection)monoSection.style.display='none';
+    if(tipoRow)tipoRow.style.display='';
+    if(movRow)movRow.style.display='';
+  }else{
+    if(ivaSection)ivaSection.style.display='none';
+    if(monoSection)monoSection.style.display='block';
+    var tipoEl=document.getElementById('mf-tipo');if(tipoEl)tipoEl.value='B';
+    var movEl=document.getElementById('mf-mov');if(movEl)movEl.value='venta';
+    if(tipoRow)tipoRow.style.display='none';
+    if(movRow)movRow.style.display='none';
+  }
+  var fechaEl=document.getElementById('mf-fecha');
+  if(fechaEl&&!fechaEl.value)fechaEl.value=new Date().toISOString().split('T')[0];
+}
+
+function calcIva(){
+  var sinIva=Number(document.getElementById('mf-sin-iva').value)||0;
+  var ivaEl=document.getElementById('mf-iva');
+  if(ivaEl)ivaEl.value=Math.round(sinIva*0.21);
+}
+
+function updateIvaFields(){
+  var tipo=document.getElementById('mf-tipo')&&document.getElementById('mf-tipo').value;
+  var ivaSection=document.getElementById('mf-iva-section');
+  if(tipo==='B'&&currentFacturaEntidad==='borra_verde'){
+    if(ivaSection)ivaSection.style.display='none';
+  }else{
+    if(ivaSection)ivaSection.style.display='block';
+  }
+}
+
+function handleFacturaFile(input){
+  var file=input.files[0];if(!file)return;
+  var label=document.getElementById('mf-file-label');if(label)label.textContent=' '+file.name;
+  var reader=new FileReader();
+  reader.onload=function(e){currentFacturaFile=e.target.result};
+  reader.readAsDataURL(file);
+}
+
+async function saveFactura(){
+  var v=function(id){return document.getElementById(id)&&document.getElementById(id).value||''};
+  if(!v('mf-fecha')||!v('mf-concepto')){toast('Completa fecha y concepto',true);return}
+  var isMono=currentFacturaEntidad!=='borra_verde';
+  var sinIva=isMono?0:Number(v('mf-sin-iva'))||0;
+  var iva=isMono?0:Number(v('mf-iva'))||0;
+  var monto=isMono?Number(v('mf-monto-mono'))||0:sinIva+iva;
+  var row={id:uid(),entidad:currentFacturaEntidad,tipo:v('mf-tipo')||'B',numero:v('mf-numero'),fecha:v('mf-fecha'),concepto:v('mf-concepto'),cliente_proveedor:v('mf-cliente'),monto_sin_iva:sinIva,iva:iva,monto:monto,tipo_mov:v('mf-mov')||'venta',archivo_nombre:currentFacturaFile?document.getElementById('mf-file-label').textContent.trim():''};
+  await sbInsert('crm_facturas',row);
+  if(!S.facturas)S.facturas=[];
+  S.facturas.unshift(row);
+  closeModal('modal-factura');
+  currentFacturaFile='';
+  document.getElementById('mf-file-label').textContent=' Subir factura';
+  var fi=document.getElementById('mf-file');if(fi)fi.value='';
+  toast('Factura guardada');
+  if(currentFacturaEntidad==='borra_verde')renderContaBorra();
+  else if(currentFacturaEntidad==='joaquin')renderContaJoaquin();
+  else renderContaTomas();
+}
+
+async function delFactura(id){
+  if(!confirm('Eliminar factura?'))return;
+  await sbDelete('crm_facturas',id);
+  S.facturas=(S.facturas||[]).filter(function(x){return x.id!==id});
+  renderContaBorra();renderContaJoaquin();renderContaTomas();
+}
+
+// ── PAGOS FIJOS ──
+var PAGOS_DEFAULT=[
+  {nombre:'Sueldos',dia:'1 al 5',dias:[1,5]},
+  {nombre:'Alquiler',dia:'1 al 5',dias:[1,5]},
+  {nombre:'Monotributo Joaquin',dia:'19',dias:[19]},
+  {nombre:'Monotributo Tomas',dia:'19',dias:[19]},
+  {nombre:'Agencia de Ads',dia:'1 al 10',dias:[1,10]},
+  {nombre:'Contador',dia:'a convenir',dias:[]},
+  {nombre:'IVA',dia:'20 mes siguiente',dias:[20]},
+];
+
+function renderPagosFijos(){
+  var now=new Date();
+  var mes=now.getMonth()+1;
+  var anio=now.getFullYear();
+  var label=document.getElementById('pagos-mes-label');
+  if(label)label.textContent=MESES_FULL[mes-1]+' '+anio;
+  var pagosMes=(S.pagos_fijos||[]).filter(function(p){return Number(p.mes)===mes&&Number(p.anio)===anio});
+  var list=document.getElementById('pagos-fijos-list');
+  if(!list)return;
+  var nombresEnDB=pagosMes.map(function(p){return p.nombre});
+  var allPagos=PAGOS_DEFAULT.map(function(def){
+    var existente=pagosMes.find(function(p){return p.nombre===def.nombre});
+    return existente||{id:null,nombre:def.nombre,monto:0,vencimiento_dia:def.dias[0]||0,mes:mes,anio:anio,pagado:false,notas:''};
+  });
+  pagosMes.filter(function(p){return !PAGOS_DEFAULT.find(function(d){return d.nombre===p.nombre})}).forEach(function(p){allPagos.push(p)});
+  list.innerHTML='';
+  var totalPend=0,totalPagado=0;
+  allPagos.forEach(function(p){
+    if(!p.pagado)totalPend+=(Number(p.monto)||0);
+    else totalPagado+=(Number(p.monto)||0);
+    var card=document.createElement('div');
+    card.className='pago-item'+(p.pagado?' pagado':'');
+    card.innerHTML='<div class="toggle-check'+(p.pagado?' on':'')+'"></div>'
+      +'<div style="flex:1"><div class="pago-nombre">'+p.nombre+'</div>'
+      +'<div class="pago-venc">Vence: '+(PAGOS_DEFAULT.find(function(d){return d.nombre===p.nombre})||{dia:'--'}).dia+'</div>'
+      +(p.notas?'<div style="font-size:10px;color:var(--txt3)">'+p.notas+'</div>':'')+'</div>'
+      +(p.monto?'<div class="pago-monto">'+fmtPeso(p.monto)+'</div>':'<div style="font-size:11px;color:var(--txt3)">sin monto</div>');
+    card.querySelector('.toggle-check').onclick=(function(pago){return function(){togglePagoFijo(pago)}})(p);
+    list.appendChild(card);
+  });
+  var summary=document.createElement('div');
+  summary.style.cssText='display:flex;gap:12px;margin-top:16px;flex-wrap:wrap';
+  summary.innerHTML=(totalPend?'<div style="font-size:12px;color:#b84848;font-weight:700">Pendiente: '+fmtPeso(totalPend)+'</div>':'')
+    +(totalPagado?'<div style="font-size:12px;color:#3d8a5a;font-weight:700">Pagado: '+fmtPeso(totalPagado)+'</div>':'');
+  list.appendChild(summary);
+}
+
+async function togglePagoFijo(pago){
+  if(!pago.id){
+    var row={id:uid(),nombre:pago.nombre,monto:pago.monto||0,vencimiento_dia:pago.vencimiento_dia||0,mes:pago.mes,anio:pago.anio,pagado:true,fecha_pago:new Date().toISOString().split('T')[0],notas:pago.notas||''};
+    await sbInsert('crm_pagos_fijos',row);
+    if(!S.pagos_fijos)S.pagos_fijos=[];S.pagos_fijos.push(row);
+  }else{
+    pago.pagado=!pago.pagado;
+    pago.fecha_pago=pago.pagado?new Date().toISOString().split('T')[0]:'';
+    await sbUpsert('crm_pagos_fijos',pago);
+  }
+  renderPagosFijos();
+}
+
+async function savePagoFijo(){
+  var v=function(id){return document.getElementById(id)&&document.getElementById(id).value||''};
+  var nombre=v('mpf-nombre')==='Otro'?v('mpf-otro-txt'):v('mpf-nombre');
+  if(!nombre.trim()){toast('Ingresa el nombre del pago',true);return}
+  var row={id:uid(),nombre:nombre,monto:Number(v('mpf-monto'))||0,vencimiento_dia:Number(v('mpf-dia'))||0,mes:Number(v('mpf-mes')),anio:Number(v('mpf-anio'))||new Date().getFullYear(),pagado:false,notas:v('mpf-notas')};
+  await sbInsert('crm_pagos_fijos',row);
+  if(!S.pagos_fijos)S.pagos_fijos=[];S.pagos_fijos.push(row);
+  closeModal('modal-pago-fijo');toast('Pago agregado');renderPagosFijos();
+}
+
+function renderContaPagosAlert(){
+  var now=new Date();
+  var dia=now.getDate();
+  var mes=now.getMonth()+1;
+  var anio=now.getFullYear();
+  if(dia>5)return; // Solo alertar en los primeros 5 días del mes
+  var alertEl=document.getElementById('conta-pagos-alert');
+  if(!alertEl)return;
+  var pagosPend=PAGOS_DEFAULT.filter(function(p){
+    var pagado=(S.pagos_fijos||[]).find(function(x){return x.nombre===p.nombre&&Number(x.mes)===mes&&Number(x.anio)===anio&&x.pagado});
+    return !pagado;
+  });
+  if(pagosPend.length){
+    alertEl.innerHTML='<div class="conta-warn" style="margin-bottom:14px">📅 Inicio de mes — Pagos pendientes de confirmar: <strong>'+pagosPend.map(function(p){return p.nombre}).join(', ')+'</strong></div>';
+  }
 }
 
 // ===== INIT =====
