@@ -216,6 +216,8 @@ textarea{resize:vertical;min-height:80px}
 .person-tab{flex-shrink:0;padding:8px 16px;border-radius:20px;font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:13px;text-transform:uppercase;cursor:pointer;border:1.5px solid transparent;transition:all 0.15s;background:rgba(0,0,0,0.06);color:var(--txt2)}
 
 @media(max-width:768px){
+  #page-generador > div[style*="grid-template-columns:1fr 340px"]{display:flex!important;flex-direction:column!important}
+
   /* MENU */
   #menu-toggle{display:flex}
   #sidebar{position:fixed;left:0;top:0;bottom:0;width:0!important;overflow:hidden;z-index:200;transition:width 0.3s cubic-bezier(0.4,0,0.2,1)}
@@ -466,6 +468,36 @@ textarea{resize:vertical;min-height:80px}
 .gen-section-title{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:16px;text-transform:uppercase;color:var(--gold);letter-spacing:0.02em;display:flex;align-items:center;gap:8px}
 .gen-count{font-size:11px;font-weight:700;background:rgba(212,168,50,0.12);border:1px solid rgba(212,168,50,0.2);color:var(--gold);padding:2px 8px;border-radius:10px}
 
+
+/* GENERADOR IA */
+.gen-upload-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:6px}
+.gen-upload-slot{aspect-ratio:1;border:2px dashed rgba(0,0,0,0.12);border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px;background:rgba(0,0,0,0.02);transition:all 0.15s;position:relative;overflow:hidden}
+.gen-upload-slot:hover{border-color:rgba(196,152,32,0.4);background:rgba(196,152,32,0.04)}
+.gen-upload-slot.filled{border-style:solid;border-color:rgba(196,152,32,0.3)}
+.gen-upload-slot img{width:100%;height:100%;object-fit:cover;border-radius:8px}
+.gen-upload-slot .slot-icon{font-size:20px;color:var(--txt3)}
+.gen-upload-slot .slot-label{font-size:9px;color:var(--txt3);font-weight:600;text-transform:uppercase}
+.gen-upload-slot .slot-remove{position:absolute;top:4px;right:4px;width:18px;height:18px;border-radius:50%;background:rgba(184,72,72,0.8);color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2}
+.gen-ref-slot{width:100%;aspect-ratio:16/9;max-height:180px;border:2px dashed rgba(0,0,0,0.12);border-radius:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;background:rgba(0,0,0,0.02);transition:all 0.15s;position:relative;overflow:hidden}
+.gen-ref-slot:hover{border-color:rgba(196,152,32,0.4);background:rgba(196,152,32,0.04)}
+.gen-ref-slot img{width:100%;height:100%;object-fit:cover;border-radius:10px}
+.format-grid{display:flex;gap:8px;flex-wrap:wrap}
+.format-btn{padding:8px 16px;border-radius:8px;border:1.5px solid rgba(0,0,0,0.1);background:rgba(0,0,0,0.03);cursor:pointer;font-size:12px;font-weight:700;color:var(--txt2);transition:all 0.15s;font-family:'Barlow',sans-serif}
+.format-btn:hover{border-color:rgba(196,152,32,0.3);color:var(--gold)}
+.format-btn.active{border-color:var(--gold);background:rgba(196,152,32,0.1);color:var(--gold)}
+.gen-result-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:20px}
+.gen-result-card{border-radius:12px;overflow:hidden;border:1px solid rgba(0,0,0,0.08);background:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.06)}
+.gen-result-card img{width:100%;display:block}
+.gen-result-card-footer{padding:10px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.gen-status-bar{background:linear-gradient(135deg,rgba(61,106,170,0.08),rgba(122,74,184,0.06));border:1px solid rgba(61,106,170,0.2);border-radius:10px;padding:16px;margin-top:16px;display:none}
+.gen-status-bar.visible{display:flex;align-items:center;gap:12px}
+.gen-spinner{width:24px;height:24px;border:3px solid rgba(61,106,170,0.2);border-top-color:#3d6aaa;border-radius:50%;animation:spin 0.8s linear infinite;flex-shrink:0}
+.gen-status-txt{font-size:12px;color:var(--txt2);font-weight:600}
+@media(max-width:768px){
+  .gen-upload-grid{grid-template-columns:repeat(3,1fr)}
+  .gen-result-grid{grid-template-columns:repeat(2,1fr)}
+}
+
 </style>
 </head>
 <body>
@@ -489,6 +521,7 @@ textarea{resize:vertical;min-height:80px}
     <div class="sb-section-label">Contenido</div>
     <div class="nav-item" onclick="nav('contenido',this)"><div class="nav-dot"></div><span class="nav-text">Contenido</span></div>
     <div class="nav-item" onclick="nav('referencia',this)"><div class="nav-dot"></div><span class="nav-text">Referencia</span></div>
+    <div class="nav-item" onclick="nav('generador',this)"><div class="nav-dot"></div><span class="nav-text">Generador IA</span></div>
     <div class="sb-section-label">Agencia</div>
     <div class="nav-item" onclick="nav('metricas',this)"><div class="nav-dot"></div><span class="nav-text">Metricas IA</span></div>
     <div class="sb-section-label">Sistema</div>
@@ -637,6 +670,105 @@ textarea{resize:vertical;min-height:80px}
     <div class="future-card"><div style="display:flex;align-items:center;gap:8px"><div class="future-card-title">Meta Business API</div><span class="api-badge">API</span></div><div class="future-card-desc">Importar metricas automaticamente desde Instagram.</div></div>
     <div class="future-card"><div style="display:flex;align-items:center;gap:8px"><div class="future-card-title">Apify Scraping</div><span class="api-badge">API</span></div><div class="future-card-desc">Analisis automatico de perfiles de referentes.</div></div>
   </div>
+</div>
+
+<!-- GENERADOR IA -->
+<div class="page" id="page-generador">
+  <div class="page-header">
+    <div class="page-title">Generador IA</div>
+    <div class="page-sub">Generá contenido para redes usando tus fotos del producto</div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start">
+
+    <!-- PANEL IZQUIERDO -->
+    <div style="display:flex;flex-direction:column;gap:16px">
+
+      <!-- FOTOS DEL PRODUCTO -->
+      <div class="card">
+        <div class="sec-header" style="margin-bottom:12px">
+          <div class="sec-title">Fotos del producto</div>
+          <span style="font-size:11px;color:var(--txt2)">hasta 6 fotos desde distintos ángulos</span>
+        </div>
+        <div class="gen-upload-grid" id="product-slots"></div>
+        <input type="file" id="product-file-input" accept="image/*" style="display:none" multiple onchange="handleProductFiles(this)">
+        <div style="font-size:10px;color:var(--txt3);margin-top:6px">Tocá cualquier slot para agregar una foto</div>
+      </div>
+
+      <!-- FOTO DE REFERENCIA -->
+      <div class="card">
+        <div class="sec-header" style="margin-bottom:12px">
+          <div class="sec-title">Foto de referencia / estilo</div>
+          <span style="font-size:11px;color:var(--txt2)">el resultado va a tener este estilo</span>
+        </div>
+        <div class="gen-ref-slot" id="ref-slot" onclick="document.getElementById('ref-file-input').click()">
+          <span style="font-size:28px">🖼</span>
+          <span style="font-size:12px;color:var(--txt2);font-weight:600">Subir foto de referencia</span>
+          <span style="font-size:10px;color:var(--txt3)">Ejemplo: foto de producto de otra marca que te guste</span>
+        </div>
+        <input type="file" id="ref-file-input" accept="image/*" style="display:none" onchange="handleRefFile(this)">
+      </div>
+
+      <!-- PROMPT -->
+      <div class="card">
+        <div class="sec-header" style="margin-bottom:12px">
+          <div class="sec-title">Descripcion del resultado</div>
+        </div>
+        <textarea id="gen-prompt" style="width:100%;min-height:80px;border:1px solid rgba(0,0,0,0.1);border-radius:var(--brs);padding:10px 12px;font-size:13px;font-family:'Barlow',sans-serif;color:var(--txt);background:#faf9f7;resize:vertical" placeholder="Ej: mate Changui sobre mesa de madera con luz natural, estilo editorial minimalista, fondo neutro crema..."></textarea>
+      </div>
+
+    </div>
+
+    <!-- PANEL DERECHO -->
+    <div style="display:flex;flex-direction:column;gap:16px">
+
+      <!-- FORMATO -->
+      <div class="card">
+        <div class="sec-title" style="margin-bottom:12px">Formato</div>
+        <div class="format-grid" id="format-grid">
+          <button class="format-btn active" data-ratio="1:1" onclick="selectFormat(this)">1:1<br><span style="font-size:9px;font-weight:400">Feed</span></button>
+          <button class="format-btn" data-ratio="4:5" onclick="selectFormat(this)">4:5<br><span style="font-size:9px;font-weight:400">Portrait</span></button>
+          <button class="format-btn" data-ratio="9:16" onclick="selectFormat(this)">9:16<br><span style="font-size:9px;font-weight:400">Stories</span></button>
+          <button class="format-btn" data-ratio="16:9" onclick="selectFormat(this)">16:9<br><span style="font-size:9px;font-weight:400">Banner</span></button>
+        </div>
+      </div>
+
+      <!-- CONFIG API -->
+      <div class="card">
+        <div class="sec-title" style="margin-bottom:10px">API Key Replicate</div>
+        <input type="password" id="gen-apikey" placeholder="r8_..." oninput="saveGenKey(this.value)" style="margin-bottom:0">
+        <div style="font-size:10px;color:var(--txt3);margin-top:6px">Gratis en <a href="https://replicate.com/account/api-tokens" target="_blank" style="color:var(--gold)">replicate.com</a></div>
+      </div>
+
+      <!-- GENERAR -->
+      <button class="btn btn-gold" id="gen-btn" onclick="generateImage()" style="width:100%;min-height:52px;font-size:14px;justify-content:center">
+        ✦ Generar imagen
+      </button>
+
+      <!-- COSTO ESTIMADO -->
+      <div style="text-align:center;font-size:10px;color:var(--txt3)">~$0.04 por generación</div>
+
+      <!-- STATUS -->
+      <div class="gen-status-bar" id="gen-status">
+        <div class="gen-spinner"></div>
+        <div>
+          <div class="gen-status-txt" id="gen-status-txt">Generando...</div>
+          <div style="font-size:10px;color:var(--txt3);margin-top:2px">Puede tardar 20-40 segundos</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- RESULTADOS -->
+  <div id="gen-results-section" style="margin-top:24px;display:none">
+    <div class="sec-header" style="margin-bottom:14px">
+      <div class="sec-title">Resultados generados</div>
+      <button class="btn btn-outline btn-sm" onclick="clearGenResults()">Limpiar</button>
+    </div>
+    <div class="gen-result-grid" id="gen-results-grid"></div>
+  </div>
+
 </div>
 
 </main>
@@ -917,7 +1049,7 @@ async function refreshData(){
     S.ing=results[6]||[];S.gas=results[7]||[];S.angulos=results[8]||[];
     S.tareas=(results[9]||[]).map(function(t){return Object.assign({},t,{comments:Array.isArray(t.comments)?t.comments:[]})});
     S.insumos=results[10]||[];S.pedidos=results[11]||[];S.referencias=results[12]||[];S.gastos2=results[13]||[];
-    var renders={dashboard:renderDash,tareas:renderTareas,insumos:renderInsumos,gastos:renderGastos,pedidos:renderPedidos,referencia:renderReferencia,contenido:renderContent,metricas:renderMetricas,exportar:renderExportar};
+    var renders={dashboard:renderDash,tareas:renderTareas,insumos:renderInsumos,gastos:renderGastos,pedidos:renderPedidos,referencia:renderReferencia,contenido:renderContent,metricas:renderMetricas,exportar:renderExportar,generador:renderGenerador};
     if(renders[currentPage])renders[currentPage]();
     var now=new Date();var ls=document.getElementById('last-sync');
     if(ls){ls.style.maxHeight='20px';ls.style.opacity='1';ls.textContent='Sync '+now.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})}
@@ -937,7 +1069,7 @@ function nav(id,el){
   document.getElementById('page-'+id).classList.add('active');
   if(el)el.classList.add('active');
   currentPage=id;
-  var renders={dashboard:renderDash,tareas:renderTareas,insumos:renderInsumos,gastos:renderGastos,pedidos:renderPedidos,referencia:renderReferencia,contenido:renderContent,metricas:renderMetricas,exportar:renderExportar};
+  var renders={dashboard:renderDash,tareas:renderTareas,insumos:renderInsumos,gastos:renderGastos,pedidos:renderPedidos,referencia:renderReferencia,contenido:renderContent,metricas:renderMetricas,exportar:renderExportar,generador:renderGenerador};
   if(renders[id])renders[id]();
 }
 function openModal(id){document.getElementById(id).classList.add('open')}
@@ -1757,6 +1889,230 @@ document.addEventListener('DOMContentLoaded',function(){
   var inp=document.getElementById('chat-input');
   if(inp)inp.addEventListener('input',function(){this.style.height='38px';this.style.height=Math.min(this.scrollHeight,100)+'px'});
 });
+
+
+// ===== GENERADOR IA =====
+var productImages = [null,null,null,null,null,null];
+var refImage = null;
+var selectedFormat = '1:1';
+var genResults = [];
+var currentSlotIndex = -1;
+
+function renderGenerador(){
+  loadGenKey();
+  renderProductSlots();
+}
+
+function renderProductSlots(){
+  var grid = document.getElementById('product-slots');
+  if(!grid) return;
+  grid.innerHTML = '';
+  for(var i=0;i<6;i++){
+    var slot = document.createElement('div');
+    slot.className = 'gen-upload-slot' + (productImages[i]?' filled':'');
+    if(productImages[i]){
+      slot.innerHTML = '<img src="'+productImages[i]+'">'
+        +'<div class="slot-remove" onclick="removeProductImg(event,'+i+')">×</div>';
+    } else {
+      slot.innerHTML = '<div class="slot-icon">+</div><div class="slot-label">Foto '+(i+1)+'</div>';
+    }
+    slot.onclick = (function(idx){ return function(e){
+      if(e.target.classList.contains('slot-remove')) return;
+      currentSlotIndex = idx;
+      document.getElementById('product-file-input').click();
+    }})(i);
+    grid.appendChild(slot);
+  }
+}
+
+function handleProductFiles(input){
+  var files = Array.from(input.files);
+  files.forEach(function(file, fi){
+    var idx = currentSlotIndex >= 0 ? currentSlotIndex : fi;
+    if(idx > 5) return;
+    compressImage(file, 1024, 0.85, function(b64){
+      productImages[idx] = b64;
+      currentSlotIndex = -1;
+      renderProductSlots();
+    });
+  });
+  input.value = '';
+}
+
+function removeProductImg(e, idx){
+  e.stopPropagation();
+  productImages[idx] = null;
+  renderProductSlots();
+}
+
+function handleRefFile(input){
+  var file = input.files[0]; if(!file) return;
+  compressImage(file, 1200, 0.85, function(b64){
+    refImage = b64;
+    var slot = document.getElementById('ref-slot');
+    if(slot) slot.innerHTML = '<img src="'+b64+'"><div class="slot-remove" onclick="removeRefImg(event)" style="position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:50%;background:rgba(184,72,72,0.85);color:#fff;font-size:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2">×</div>';
+  });
+  input.value = '';
+}
+
+function removeRefImg(e){
+  e.stopPropagation();
+  refImage = null;
+  var slot = document.getElementById('ref-slot');
+  if(slot) slot.innerHTML = '<span style="font-size:28px">🖼</span><span style="font-size:12px;color:var(--txt2);font-weight:600">Subir foto de referencia</span><span style="font-size:10px;color:var(--txt3)">Ejemplo: foto de producto de otra marca que te guste</span>';
+  slot.onclick = function(){ document.getElementById('ref-file-input').click() };
+}
+
+function compressImage(file, maxSize, quality, callback){
+  var reader = new FileReader();
+  reader.onload = function(e){
+    var img = new Image();
+    img.onload = function(){
+      var canvas = document.createElement('canvas');
+      var w = img.width, h = img.height;
+      if(w > maxSize){ h = Math.round(h*maxSize/w); w = maxSize; }
+      if(h > maxSize){ w = Math.round(w*maxSize/h); h = maxSize; }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      callback(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function selectFormat(el){
+  selectedFormat = el.dataset.ratio;
+  document.querySelectorAll('.format-btn').forEach(function(b){ b.classList.remove('active') });
+  el.classList.add('active');
+}
+
+function saveGenKey(v){ try{ localStorage.setItem('crm_gen_key',v) }catch{} }
+function loadGenKey(){
+  try{
+    var k = localStorage.getItem('crm_gen_key') || '';
+    var el = document.getElementById('gen-apikey');
+    if(el) el.value = k;
+  }catch{}
+}
+
+async function generateImage(){
+  var apiKey = (document.getElementById('gen-apikey')&&document.getElementById('gen-apikey').value||'').trim();
+  var prompt = (document.getElementById('gen-prompt')&&document.getElementById('gen-prompt').value||'').trim();
+  if(!apiKey){ toast('Ingresa tu API key de Replicate',true); return; }
+  if(!prompt){ toast('Escribi una descripcion del resultado',true); return; }
+  var filled = productImages.filter(Boolean);
+  if(!filled.length){ toast('Subí al menos una foto del producto',true); return; }
+
+  var btn = document.getElementById('gen-btn');
+  var status = document.getElementById('gen-status');
+  var statusTxt = document.getElementById('gen-status-txt');
+  btn.disabled = true; btn.textContent = 'Generando...';
+  status.className = 'gen-status-bar visible';
+  statusTxt.textContent = 'Enviando imágenes a Replicate...';
+
+  // Build input for flux-kontext-pro
+  // Use first product image as main reference, others in prompt context
+  var mainImg = filled[0];
+  var fullPrompt = prompt;
+  if(refImage) fullPrompt += '. Style reference: apply the lighting, composition and aesthetic from the provided style image.';
+  fullPrompt += ' Product photography, high quality, sharp details, professional.';
+
+  var input = {
+    prompt: fullPrompt,
+    aspect_ratio: selectedFormat,
+    output_format: 'jpg',
+    output_quality: 90,
+    safety_tolerance: 2
+  };
+
+  // Add reference images
+  if(mainImg) input.input_image = mainImg;
+  if(refImage) input.reference_image = refImage;
+  // Add extra product images if model supports them
+  filled.slice(1,4).forEach(function(img,i){
+    input['image_'+(i+2)] = img;
+  });
+
+  try{
+    statusTxt.textContent = 'Creando predicción...';
+    var createRes = await fetch('https://api.replicate.com/v1/models/black-forest-labs/flux-kontext-pro/predictions',{
+      method:'POST',
+      headers:{
+        'Authorization':'Bearer '+apiKey,
+        'Content-Type':'application/json',
+        'Prefer':'wait'
+      },
+      body: JSON.stringify({input: input})
+    });
+
+    if(!createRes.ok){
+      var err = await createRes.json();
+      throw new Error(err.detail || JSON.stringify(err));
+    }
+
+    var prediction = await createRes.json();
+    statusTxt.textContent = 'Procesando... (puede tardar 20-40 segundos)';
+
+    // Poll for result
+    var maxPolls = 60, polls = 0;
+    while(polls < maxPolls){
+      await new Promise(function(r){ setTimeout(r, 2000) });
+      polls++;
+      var pollRes = await fetch('https://api.replicate.com/v1/predictions/'+prediction.id,{
+        headers:{'Authorization':'Bearer '+apiKey}
+      });
+      var pollData = await pollRes.json();
+      statusTxt.textContent = 'Procesando... ('+Math.round(polls*2)+'s)';
+
+      if(pollData.status === 'succeeded'){
+        var outputUrl = Array.isArray(pollData.output) ? pollData.output[0] : pollData.output;
+        addGenResult(outputUrl, prompt, selectedFormat);
+        status.className = 'gen-status-bar';
+        btn.disabled = false; btn.textContent = '✦ Generar imagen';
+        toast('Imagen generada');
+        return;
+      } else if(pollData.status === 'failed' || pollData.status === 'canceled'){
+        throw new Error('La generación falló: '+(pollData.error||'error desconocido'));
+      }
+    }
+    throw new Error('Tiempo de espera agotado');
+  } catch(e){
+    toast('Error: '+e.message, true);
+    status.className = 'gen-status-bar';
+    btn.disabled = false; btn.textContent = '✦ Generar imagen';
+  }
+}
+
+function addGenResult(url, prompt, format){
+  genResults.unshift({url:url, prompt:prompt, format:format, ts:new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})});
+  renderGenResults();
+}
+
+function renderGenResults(){
+  var section = document.getElementById('gen-results-section');
+  var grid = document.getElementById('gen-results-grid');
+  if(!grid||!section) return;
+  if(!genResults.length){ section.style.display='none'; return; }
+  section.style.display='block';
+  grid.innerHTML='';
+  genResults.forEach(function(r,i){
+    var card = document.createElement('div');
+    card.className = 'gen-result-card';
+    card.innerHTML = '<img src="'+r.url+'" loading="lazy">'
+      +'<div class="gen-result-card-footer">'
+      +'<div style="flex:1"><div style="font-size:11px;font-weight:600;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+r.format+' · '+r.ts+'</div>'
+      +'<div style="font-size:10px;color:var(--txt2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+r.prompt.slice(0,50)+(r.prompt.length>50?'...':'')+'</div></div>'
+      +'<a href="'+r.url+'" target="_blank" class="btn btn-gold btn-sm" style="flex-shrink:0">↓</a>'
+      +'</div>';
+    grid.appendChild(card);
+  });
+}
+
+function clearGenResults(){
+  genResults=[];
+  renderGenResults();
+}
 
 // ===== INIT =====
 window.addEventListener('resize',function(){if(currentPage==='tareas')renderPersonTabs()});
