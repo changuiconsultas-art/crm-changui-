@@ -1997,92 +1997,99 @@ function loadGenKey(){
 }
 
 async function generateImage(){
-  var apiKey = (document.getElementById('gen-apikey')&&document.getElementById('gen-apikey').value||'').trim();
-  var prompt = (document.getElementById('gen-prompt')&&document.getElementById('gen-prompt').value||'').trim();
-  if(!apiKey){ toast('Ingresa tu API key de Replicate',true); return; }
-  if(!prompt){ toast('Escribi una descripcion del resultado',true); return; }
-  var filled = productImages.filter(Boolean);
-  if(!filled.length){ toast('Subí al menos una foto del producto',true); return; }
+  var apiKey=(document.getElementById('gen-apikey')&&document.getElementById('gen-apikey').value||'').trim();
+  var prompt=(document.getElementById('gen-prompt')&&document.getElementById('gen-prompt').value||'').trim();
+  if(!apiKey){toast('Ingresa tu API key de Replicate',true);return}
+  if(!prompt){toast('Escribi una descripcion del resultado',true);return}
+  var filled=productImages.filter(Boolean);
+  if(!filled.length){toast('Subi al menos una foto del producto',true);return}
 
-  var btn = document.getElementById('gen-btn');
-  var status = document.getElementById('gen-status');
-  var statusTxt = document.getElementById('gen-status-txt');
-  btn.disabled = true; btn.textContent = 'Generando...';
-  status.className = 'gen-status-bar visible';
-  statusTxt.textContent = 'Enviando imágenes a Replicate...';
-
-  // Build input for flux-kontext-pro
-  // Use first product image as main reference, others in prompt context
-  var mainImg = filled[0];
-  var fullPrompt = prompt;
-  if(refImage) fullPrompt += '. Style reference: apply the lighting, composition and aesthetic from the provided style image.';
-  fullPrompt += ' Product photography, high quality, sharp details, professional.';
-
-  var input = {
-    prompt: fullPrompt,
-    aspect_ratio: selectedFormat,
-    output_format: 'jpg',
-    output_quality: 90,
-    safety_tolerance: 2
-  };
-
-  // Add reference images
-  if(mainImg) input.input_image = mainImg;
-  if(refImage) input.reference_image = refImage;
-  // Add extra product images if model supports them
-  filled.slice(1,4).forEach(function(img,i){
-    input['image_'+(i+2)] = img;
-  });
+  var btn=document.getElementById('gen-btn');
+  var status=document.getElementById('gen-status');
+  var statusTxt=document.getElementById('gen-status-txt');
+  btn.disabled=true;btn.textContent='Generando...';
+  status.className='gen-status-bar visible';
 
   try{
-    statusTxt.textContent = 'Creando predicción...';
-    var createRes = await fetch('https://api.replicate.com/v1/models/black-forest-labs/flux-kontext-pro/predictions',{
+    // Upload to Supabase Storage to get public URLs
+    async function uploadToStorage(b64, filename){
+      var byteStr=atob(b64.split(',')[1]);
+      var mime=b64.split(',')[0].split(':')[1].split(';')[0];
+      var ab=new ArrayBuffer(byteStr.length);
+      var ia=new Uint8Array(ab);
+      for(var i=0;i<byteStr.length;i++) ia[i]=byteStr.charCodeAt(i);
+      var blob=new Blob([ab],{type:mime});
+      var res=await fetch(SB_URL+'/storage/v1/object/gen-images/'+filename,{
+        method:'POST',
+        headers:{'apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY,'Content-Type':mime,'x-upsert':'true'},
+        body:blob
+      });
+      if(!res.ok) throw new Error('Upload failed');
+      return SB_URL+'/storage/v1/object/public/gen-images/'+filename;
+    }
+
+    statusTxt.textContent='Subiendo imágenes a servidor...';
+    var ts=Date.now();
+    var mainUrl=await uploadToStorage(filled[0],'prod-'+ts+'-0.jpg');
+    var refUrl=null;
+    if(refImage) refUrl=await uploadToStorage(refImage,'ref-'+ts+'.jpg');
+
+    statusTxt.textContent='Enviando a Replicate IA...';
+
+    var fullPrompt=prompt+'. Professional product photography, sharp focus, high quality.';
+    if(refUrl) fullPrompt+=' Match the style, lighting and composition of the reference image.';
+
+    var input={prompt:fullPrompt,aspect_ratio:selectedFormat,output_format:'jpg',output_quality:90,safety_tolerance:2,input_image:mainUrl};
+    if(refUrl) input.reference_image_url=refUrl;
+
+    var replicateRes=await fetch('https://api.replicate.com/v1/models/black-forest-labs/flux-kontext-pro/predictions',{
       method:'POST',
-      headers:{
-        'Authorization':'Bearer '+apiKey,
-        'Content-Type':'application/json',
-        'Prefer':'wait'
-      },
-      body: JSON.stringify({input: input})
+      headers:{'Authorization':'Token '+apiKey,'Content-Type':'application/json','Prefer':'wait=60'},
+      body:JSON.stringify({input:input})
     });
 
-    if(!createRes.ok){
-      var err = await createRes.json();
-      throw new Error(err.detail || JSON.stringify(err));
+    if(!replicateRes.ok){
+      var errData=await replicateRes.json();
+      throw new Error(errData.detail||errData.error||'Error '+replicateRes.status);
     }
 
-    var prediction = await createRes.json();
-    statusTxt.textContent = 'Procesando... (puede tardar 20-40 segundos)';
+    var prediction=await replicateRes.json();
+    if(prediction.output){
+      var outputUrl=Array.isArray(prediction.output)?prediction.output[0]:prediction.output;
+      addGenResult(outputUrl,prompt,selectedFormat);
+      status.className='gen-status-bar';
+      btn.disabled=false;btn.textContent='✦ Generar imagen';
+      toast('¡Imagen generada!');
+      return;
+    }
 
-    // Poll for result
-    var maxPolls = 60, polls = 0;
-    while(polls < maxPolls){
-      await new Promise(function(r){ setTimeout(r, 2000) });
+    statusTxt.textContent='Procesando...';
+    var maxPolls=40,polls=0;
+    while(polls<maxPolls){
+      await new Promise(function(r){setTimeout(r,3000)});
       polls++;
-      var pollRes = await fetch('https://api.replicate.com/v1/predictions/'+prediction.id,{
-        headers:{'Authorization':'Bearer '+apiKey}
-      });
-      var pollData = await pollRes.json();
-      statusTxt.textContent = 'Procesando... ('+Math.round(polls*2)+'s)';
-
-      if(pollData.status === 'succeeded'){
-        var outputUrl = Array.isArray(pollData.output) ? pollData.output[0] : pollData.output;
-        addGenResult(outputUrl, prompt, selectedFormat);
-        status.className = 'gen-status-bar';
-        btn.disabled = false; btn.textContent = '✦ Generar imagen';
-        toast('Imagen generada');
+      statusTxt.textContent='Procesando... ('+Math.round(polls*3)+'s)';
+      var pollRes=await fetch('https://api.replicate.com/v1/predictions/'+prediction.id,{headers:{'Authorization':'Token '+apiKey}});
+      var pollData=await pollRes.json();
+      if(pollData.status==='succeeded'){
+        var out=Array.isArray(pollData.output)?pollData.output[0]:pollData.output;
+        addGenResult(out,prompt,selectedFormat);
+        status.className='gen-status-bar';
+        btn.disabled=false;btn.textContent='✦ Generar imagen';
+        toast('¡Imagen generada!');
         return;
-      } else if(pollData.status === 'failed' || pollData.status === 'canceled'){
-        throw new Error('La generación falló: '+(pollData.error||'error desconocido'));
+      } else if(pollData.status==='failed'||pollData.status==='canceled'){
+        throw new Error('Falló: '+(pollData.error||'error desconocido'));
       }
     }
-    throw new Error('Tiempo de espera agotado');
-  } catch(e){
-    toast('Error: '+e.message, true);
-    status.className = 'gen-status-bar';
-    btn.disabled = false; btn.textContent = '✦ Generar imagen';
+    throw new Error('Tiempo agotado — intentá de nuevo');
+  }catch(e){
+    toast('Error: '+e.message,true);
+    status.className='gen-status-bar';
+    btn.disabled=false;btn.textContent='✦ Generar imagen';
   }
 }
+
 
 function addGenResult(url, prompt, format){
   genResults.unshift({url:url, prompt:prompt, format:format, ts:new Date().toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})});
