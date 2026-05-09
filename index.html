@@ -828,7 +828,15 @@ textarea{resize:vertical;min-height:80px}
       <div><div class="page-title">Contabilidad</div><div class="page-sub">Borra Verde SRL · Joaquin De Tomaso · Tomas Zaragoza</div></div>
       <div style="display:flex;gap:8px;align-items:center">
         <a href="https://drive.google.com/drive/folders/1lY2_ZjvfbR5BSD0qLNN7iQ6xjIKYcozH" target="_blank" class="drive-link">📁 Abrir Drive Contaduria</a>
+        <button class="btn btn-outline btn-sm" onclick="toggleClaudeKeyInput()">🔑 API Key</button>
         <button class="btn btn-outline btn-sm" onclick="lockContabilidad()">Cerrar sesion</button>
+      </div>
+    </div>
+    <div id="claude-key-row" style="display:none;margin-bottom:12px;background:rgba(61,106,170,0.06);border:1px solid rgba(61,106,170,0.2);border-radius:10px;padding:12px 14px">
+      <div style="font-size:11px;font-weight:700;color:#3d6aaa;margin-bottom:6px">API Key de Claude (para leer facturas)</div>
+      <div style="display:flex;gap:8px">
+        <input type="password" id="claude-key-input" placeholder="sk-ant-..." style="flex:1;font-size:12px" oninput="saveClaudeKey(this.value)">
+        <button class="btn btn-gold btn-sm" onclick="toggleClaudeKeyInput()">OK</button>
       </div>
     </div>
     <div id="conta-pagos-alert" style="margin-bottom:14px"></div>
@@ -841,7 +849,7 @@ textarea{resize:vertical;min-height:80px}
     <!-- BORRA VERDE -->
     <div class="conta-panel active" id="conta-panel-borra">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
-        <div style="font-size:11px;color:var(--txt2)">CUIT: 30-71869008-7 · IVA Responsable Inscripto</div>
+        <div style="font-size:11px;color:var(--txt2)">CUIT: 30-71869008-7 · IVA Responsable Inscripto · <a href="https://drive.google.com/drive/folders/1lY2_ZjvfbR5BSD0qLNN7iQ6xjIKYcozH" target="_blank" style="color:#3d6aaa">Ver en Drive</a></div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
           <select id="borra-mes-filter" onchange="renderContaBorra()" style="font-size:12px;padding:6px 10px;width:auto"><option value="">Todos los meses</option></select>
           <select id="borra-anio-filter" onchange="renderContaBorra()" style="font-size:12px;padding:6px 10px;width:auto"></select>
@@ -1081,6 +1089,16 @@ textarea{resize:vertical;min-height:80px}
 <div class="modal-bg" id="modal-factura" onclick="modalBgClick(event,this)">
   <div class="modal">
     <div class="modal-title" id="mf-title">+ Cargar Factura</div>
+    <!-- LECTOR IA -->
+    <div style="background:linear-gradient(135deg,rgba(61,106,170,0.07),rgba(122,74,184,0.05));border:1px solid rgba(61,106,170,0.2);border-radius:10px;padding:14px;margin-bottom:16px">
+      <div style="font-size:11px;font-weight:700;color:#3d6aaa;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px">✦ Leer factura con IA</div>
+      <div style="font-size:11px;color:var(--txt2);margin-bottom:10px">Subi la foto o PDF y Claude extrae los datos automaticamente</div>
+      <label class="file-upload-btn" for="mf-ia-file" id="mf-ia-btn">
+        <span>📄</span><span id="mf-ia-label"> Subir factura para leer</span>
+      </label>
+      <input type="file" id="mf-ia-file" accept="image/*,application/pdf" style="display:none" onchange="leerFacturaIA(this)">
+      <div id="mf-ia-status" style="margin-top:8px;font-size:11px;color:var(--txt2);display:none"></div>
+    </div>
     <input type="hidden" id="mf-entidad">
     <div class="form-grid2">
       <div class="form-row"><label>Tipo de factura</label>
@@ -2383,6 +2401,18 @@ function renderContabilidad(){
   renderContaPagosAlert();
 }
 
+
+function saveClaudeKey(v){try{localStorage.setItem('crm_claude_key',v)}catch{}}
+function toggleClaudeKeyInput(){
+  var row=document.getElementById('claude-key-row');
+  if(!row)return;
+  row.style.display=row.style.display==='none'?'block':'none';
+  if(row.style.display==='block'){
+    var inp=document.getElementById('claude-key-input');
+    if(inp){inp.value=localStorage.getItem('crm_claude_key')||'';inp.focus();}
+  }
+}
+
 function checkContaPass(){
   var val=document.getElementById('conta-pwd').value;
   var err=document.getElementById('conta-pwd-err');
@@ -2532,6 +2562,119 @@ function renderMonoPanel(entidad,anioSelId,totalId,pctId,barId,alertId,mesGridId
 }
 function renderContaJoaquin(){renderMonoPanel('joaquin','joaquin-anio-filter','joaquin-total-anual','joaquin-mono-pct','joaquin-mono-bar','joaquin-mono-alert','joaquin-mes-grid','joaquin-facturas-table',MONO_LIMITE_JOAQUIN)}
 function renderContaTomas(){renderMonoPanel('tomas','tomas-anio-filter','tomas-total-anual','tomas-mono-pct','tomas-mono-bar','tomas-mono-alert','tomas-mes-grid','tomas-facturas-table',MONO_LIMITE_TOMAS)}
+
+
+// ── LECTOR DE FACTURAS CON CLAUDE IA ──
+var CLAUDE_PROXY='https://replicate-proxy.changuiconsultas.workers.dev/anthropic/v1/messages';
+var CLAUDE_KEY=localStorage.getItem('crm_claude_key')||'';
+
+async function leerFacturaIA(input){
+  var file=input.files[0];if(!file)return;
+  var label=document.getElementById('mf-ia-label');
+  var status=document.getElementById('mf-ia-status');
+  if(label)label.textContent=' '+file.name;
+  if(status){status.style.display='block';status.textContent='Leyendo factura con Claude...'}
+
+  // Convert to base64
+  var b64=await new Promise(function(res){
+    var reader=new FileReader();
+    reader.onload=function(e){res(e.target.result.split(',')[1])};
+    reader.readAsDataURL(file);
+  });
+
+  var mediaType=file.type||'image/jpeg';
+  var isPdf=file.type==='application/pdf';
+
+  var prompt='Analiza esta factura argentina. Extrae JSON: {tipo,numero,fecha,cuit_emisor,razon_social_emisor,cuit_receptor,razon_social_receptor,concepto,monto_sin_iva,iva,total,es_compra}. Solo JSON puro.';
+
+  try{
+    var body={
+      model:'claude-opus-4-5',
+      max_tokens:1024,
+      messages:[{
+        role:'user',
+        content:[
+          {type:'image',source:{type:'base64',media_type:mediaType,data:b64}},
+          {type:'text',text:prompt}
+        ]
+      }]
+    };
+
+    if(isPdf){
+      body.messages[0].content[0]={type:'document',source:{type:'base64',media_type:'application/pdf',data:b64}};
+    }
+
+    var res=await fetch(CLAUDE_PROXY,{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':CLAUDE_KEY,
+        'anthropic-version':'2023-06-01'
+      },
+      body:JSON.stringify(body)
+    });
+
+    if(!res.ok){
+      var err=await res.json();
+      throw new Error(err.error&&err.error.message||'Error '+res.status);
+    }
+
+    var data=await res.json();
+    var text=data.content&&data.content[0]&&data.content[0].text||'{}';
+    // Clean JSON
+    var jsonStr=text.replace(/```json|```/g,'').trim();
+    var factura=JSON.parse(jsonStr);
+
+    // Fill form fields
+    if(factura.tipo){var el=document.getElementById('mf-tipo');if(el)el.value=factura.tipo}
+    if(factura.fecha){var el=document.getElementById('mf-fecha');if(el)el.value=factura.fecha}
+    if(factura.numero){var el=document.getElementById('mf-numero');if(el)el.value=factura.numero}
+    if(factura.concepto){var el=document.getElementById('mf-concepto');if(el)el.value=factura.concepto}
+    // Set cliente/proveedor based on es_compra
+    var clienteStr=factura.es_compra?(factura.razon_social_emisor||''):(factura.razon_social_receptor||'');
+    if(clienteStr){var el=document.getElementById('mf-cliente');if(el)el.value=clienteStr}
+    // Set movimiento
+    var movEl=document.getElementById('mf-mov');
+    if(movEl)movEl.value=factura.es_compra?'compra':'venta';
+    // Set montos
+    if(factura.monto_sin_iva!==undefined&&currentFacturaEntidad==='borra_verde'){
+      var sinIvaEl=document.getElementById('mf-sin-iva');if(sinIvaEl)sinIvaEl.value=factura.monto_sin_iva;
+      var ivaEl=document.getElementById('mf-iva');if(ivaEl)ivaEl.value=factura.iva||0;
+    }
+    if(factura.total!==undefined&&currentFacturaEntidad!=='borra_verde'){
+      var montoEl=document.getElementById('mf-monto-mono');if(montoEl)montoEl.value=factura.total;
+    }
+    // Update IVA fields display
+    updateIvaFields();
+
+    if(status)status.textContent='Datos extraidos. Revisa y confirma antes de guardar.';
+    if(status)status.style.color='#3d8a5a';
+
+    // Show Drive folder suggestion
+    var anio=factura.fecha?factura.fecha.split('-')[0]:new Date().getFullYear();
+    var mesNum=factura.fecha?parseInt(factura.fecha.split('-')[1]):new Date().getMonth()+1;
+    var mesNombre=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'][mesNum-1];
+    var mov=factura.es_compra?'Compra':'Venta';
+    var entNombre={borra_verde:'Borra Verde SRL',joaquin:'Joaquin De Tomaso',tomas:'Tomas Zaragoza'}[currentFacturaEntidad];
+    var driveMsg=document.createElement('div');
+    driveMsg.style.cssText='margin-top:10px;padding:10px 12px;background:rgba(61,106,170,0.08);border:1px solid rgba(61,106,170,0.2);border-radius:8px;font-size:11px;color:#3d6aaa';
+    driveMsg.innerHTML='📁 Guarda este archivo en Drive: <strong>Contaduria / '+entNombre+' / '+anio+' / '+mesNombre+' / '+mov+'</strong><br><a href="https://drive.google.com/drive/folders/1lY2_ZjvfbR5BSD0qLNN7iQ6xjIKYcozH" target="_blank" style="color:#3d6aaa;font-weight:700">Abrir Drive →</a>';
+    var statusParent=status&&status.parentNode;
+    if(statusParent){
+      var existing=statusParent.querySelector('.drive-suggestion');
+      if(existing)existing.remove();
+      driveMsg.className='drive-suggestion';
+      statusParent.appendChild(driveMsg);
+    }
+
+    toast('Factura leida. Revisa los datos y guarda.');
+
+  }catch(e){
+    if(status){status.textContent='Error: '+e.message;status.style.color='#b84848';}
+    toast('Error al leer la factura: '+e.message,true);
+  }
+  input.value='';
+}
 
 // ── FACTURAS ──
 function setFacturaEntidad(entidad){
