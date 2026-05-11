@@ -943,7 +943,11 @@ textarea{resize:vertical;min-height:80px}
           <div class="sec-title" style="margin-bottom:12px;color:#3d8a5a">+ Nuevo Ingreso</div>
           <div class="form-row" style="margin-bottom:8px"><label>Fecha</label><input type="date" id="fin-ing-fecha"></div>
           <div class="form-row" style="margin-bottom:8px"><label>Categoria</label>
-            <select id="fin-ing-cat"><option>Mercado Libre</option><option>Ventas directas</option><option>Mayoristas</option><option>Presupuestos</option><option>Otros ingresos</option></select>
+            <select id="fin-ing-cat" onchange="checkCustomCat('ing')"></select>
+          <div id="fin-ing-custom-row" style="display:none;margin-top:6px;display:none">
+            <input type="text" id="fin-ing-custom" placeholder="Escribi la categoria nueva..." style="margin-bottom:4px">
+            <button onclick="saveCustomCat('ing')" style="width:100%;padding:6px;background:var(--gold);color:#090908;border:none;border-radius:var(--brs);font-weight:700;font-size:11px;cursor:pointer">Agregar categoria</button>
+          </div>
           </div>
           <div class="form-row" style="margin-bottom:8px"><label>Monto ($)</label><input type="number" id="fin-ing-monto" placeholder="0"></div>
           <div class="form-row" style="margin-bottom:8px"><label>Descripcion</label><input type="text" id="fin-ing-desc" placeholder="Detalle..."></div>
@@ -957,7 +961,11 @@ textarea{resize:vertical;min-height:80px}
             <select id="fin-eg-cat" onchange="updateSubcatEgreso()"><option>Compras</option><option>Gastos</option></select>
           </div>
           <div class="form-row" style="margin-bottom:8px"><label>Subcategoria</label>
-            <select id="fin-eg-subcat"><option>Materias primas</option><option>Insumos</option><option>Equipamiento</option><option>Sueldos</option><option>Alquiler</option><option>Marketing</option><option>Servicios</option><option>Otros</option></select>
+            <select id="fin-eg-subcat" onchange="checkCustomSubcat()"></select>
+          <div id="fin-eg-custom-row" style="display:none">
+            <input type="text" id="fin-eg-custom" placeholder="Escribi la subcategoria nueva..." style="margin-bottom:4px;margin-top:6px">
+            <button onclick="saveCustomSubcat()" style="width:100%;padding:6px;background:var(--gold);color:#090908;border:none;border-radius:var(--brs);font-weight:700;font-size:11px;cursor:pointer">Agregar subcategoria</button>
+          </div>
           </div>
           <div class="form-row" style="margin-bottom:8px"><label>Monto ($)</label><input type="number" id="fin-eg-monto" placeholder="0"></div>
           <div class="form-row" style="margin-bottom:8px"><label>Descripcion</label><input type="text" id="fin-eg-desc" placeholder="Detalle..."></div>
@@ -2446,7 +2454,100 @@ var SUBCATS = {
   'Gastos': ['Sueldos','Alquiler','Marketing','Servicios','Contador','Publicidad','Otros']
 };
 
+// ── CATEGORIAS PERSONALIZADAS ──
+var DEFAULT_ING_CATS=['Mercado Libre','Ventas directas','Mayoristas','Presupuestos','Otros ingresos'];
+var DEFAULT_EG_SUBCATS_COMPRAS=['Materias primas','Insumos','Equipamiento','Otros'];
+var DEFAULT_EG_SUBCATS_GASTOS=['Sueldos','Alquiler','Marketing','Servicios','Contador','Publicidad','Otros'];
+
+function getCustomCats(key,defaults){
+  try{var saved=localStorage.getItem(key);return saved?JSON.parse(saved):defaults.slice()}catch{return defaults.slice()}
+}
+function saveCustomCats(key,arr){try{localStorage.setItem(key,JSON.stringify(arr))}catch{}}
+
+function populateIngCats(){
+  var sel=document.getElementById('fin-ing-cat');if(!sel)return;
+  var cats=getCustomCats('crm_ing_cats',DEFAULT_ING_CATS);
+  sel.innerHTML=cats.map(function(c){return'<option>'+c+'</option>'}).join('')+'<option value="__nuevo__">+ Agregar categoria...</option>';
+}
+
+function populateEgSubcats(){
+  var cat=document.getElementById('fin-eg-cat')&&document.getElementById('fin-eg-cat').value||'Compras';
+  var sel=document.getElementById('fin-eg-subcat');if(!sel)return;
+  var key=cat==='Compras'?'crm_eg_subcats_compras':'crm_eg_subcats_gastos';
+  var defaults=cat==='Compras'?DEFAULT_EG_SUBCATS_COMPRAS:DEFAULT_EG_SUBCATS_GASTOS;
+  var subcats=getCustomCats(key,defaults);
+  sel.innerHTML=subcats.map(function(c){return'<option>'+c+'</option>'}).join('')+'<option value="__nuevo__">+ Agregar subcategoria...</option>';
+}
+
+function checkCustomCat(type){
+  var sel=document.getElementById('fin-ing-cat');
+  var row=document.getElementById('fin-ing-custom-row');
+  if(!sel||!row)return;
+  if(sel.value==='__nuevo__'){
+    row.style.display='block';
+    var inp=document.getElementById('fin-ing-custom');
+    if(inp)inp.focus();
+  }else{
+    row.style.display='none';
+  }
+}
+
+function checkCustomSubcat(){
+  var sel=document.getElementById('fin-eg-subcat');
+  var row=document.getElementById('fin-eg-custom-row');
+  if(!sel||!row)return;
+  if(sel.value==='__nuevo__'){
+    row.style.display='block';
+    var inp=document.getElementById('fin-eg-custom');
+    if(inp)inp.focus();
+  }else{
+    row.style.display='none';
+  }
+}
+
+function saveCustomCat(type){
+  var inp=document.getElementById('fin-ing-custom');
+  var val=(inp&&inp.value||'').trim();
+  if(!val){toast('Escribi el nombre de la categoria',true);return;}
+  var cats=getCustomCats('crm_ing_cats',DEFAULT_ING_CATS);
+  // Insert before "Otros ingresos"
+  var othersIdx=cats.indexOf('Otros ingresos');
+  if(othersIdx>=0)cats.splice(othersIdx,0,val);
+  else cats.push(val);
+  saveCustomCats('crm_ing_cats',cats);
+  inp.value='';
+  document.getElementById('fin-ing-custom-row').style.display='none';
+  populateIngCats();
+  // Select the new category
+  var sel=document.getElementById('fin-ing-cat');
+  if(sel)sel.value=val;
+  toast('Categoria "'+val+'" agregada');
+}
+
+function saveCustomSubcat(){
+  var cat=document.getElementById('fin-eg-cat')&&document.getElementById('fin-eg-cat').value||'Compras';
+  var key=cat==='Compras'?'crm_eg_subcats_compras':'crm_eg_subcats_gastos';
+  var defaults=cat==='Compras'?DEFAULT_EG_SUBCATS_COMPRAS:DEFAULT_EG_SUBCATS_GASTOS;
+  var inp=document.getElementById('fin-eg-custom');
+  var val=(inp&&inp.value||'').trim();
+  if(!val){toast('Escribi el nombre de la subcategoria',true);return;}
+  var subcats=getCustomCats(key,defaults);
+  var othersIdx=subcats.indexOf('Otros');
+  if(othersIdx>=0)subcats.splice(othersIdx,0,val);
+  else subcats.push(val);
+  saveCustomCats(key,subcats);
+  inp.value='';
+  document.getElementById('fin-eg-custom-row').style.display='none';
+  populateEgSubcats();
+  var sel=document.getElementById('fin-eg-subcat');
+  if(sel)sel.value=val;
+  toast('Subcategoria "'+val+'" agregada');
+}
+
+
 function initFinanzasDates(){
+  populateIngCats();
+  populateEgSubcats();
   var today = new Date().toISOString().split('T')[0];
   var ingFecha = document.getElementById('fin-ing-fecha');
   var egFecha = document.getElementById('fin-eg-fecha');
@@ -2455,11 +2556,8 @@ function initFinanzasDates(){
 }
 
 function updateSubcatEgreso(){
-  var cat = document.getElementById('fin-eg-cat') && document.getElementById('fin-eg-cat').value;
-  var subcat = document.getElementById('fin-eg-subcat');
-  if(!subcat) return;
-  var opts = SUBCATS[cat] || ['Otros'];
-  subcat.innerHTML = opts.map(function(o){return '<option>'+o+'</option>'}).join('');
+  populateEgSubcats();
+  document.getElementById('fin-eg-custom-row').style.display='none';
 }
 
 function populateMesFilterFin(){
