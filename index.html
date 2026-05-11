@@ -1669,8 +1669,14 @@ function renderTareas(){
   board.innerHTML='';
   TEAM.forEach(function(name,ci){
     var col=TEAM_COLORS[ci];
+    var prioOrder={urgente:0,alta:1,normal:2};
     var cards=filtered.filter(function(t){return t.miembro===name}).sort(function(a,b){
       if(a.done&&!b.done)return 1;if(!a.done&&b.done)return -1;
+      // Sort by priority first
+      var pa=prioOrder[a.prio||'normal']||2;
+      var pb=prioOrder[b.prio||'normal']||2;
+      if(pa!==pb)return pa-pb;
+      // Then by date
       return new Date(a.fecha||'9999')-new Date(b.fecha||'9999');
     });
     var pending=cards.filter(function(c){return !c.done}).length;
