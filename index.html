@@ -846,6 +846,7 @@ textarea{resize:vertical;min-height:80px}
       <button class="conta-entity-tab" onclick="switchContaTab('joaquin',this)">👤 Joaquin</button>
       <button class="conta-entity-tab" onclick="switchContaTab('tomas',this)">👤 Tomas</button>
       <button class="conta-entity-tab" onclick="switchContaTab('pagos',this)">💳 Pagos fijos</button>
+      <button class="conta-entity-tab" onclick="switchContaTab('finanzas',this)">📊 Finanzas</button>
     </div>
     <!-- BORRA VERDE -->
     <div class="conta-panel active" id="conta-panel-borra">
@@ -919,7 +920,59 @@ textarea{resize:vertical;min-height:80px}
         <button class="btn btn-gold btn-sm" onclick="openModal('modal-pago-fijo')">+ Agregar pago</button>
       </div>
       <div id="pagos-fijos-list"></div>
+    
+    <!-- PANEL FINANZAS -->
+    <div class="conta-panel" id="conta-panel-finanzas">
+      <div class="grid4" id="fin-metrics" style="margin-bottom:16px"></div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="sec-header" style="margin-bottom:12px">
+          <div class="sec-title">Ingresos vs Egresos</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <select id="fin-chart-filter" onchange="renderFinanzas()" style="font-size:11px;padding:4px 8px;width:auto"><option value="6">Ultimos 6 meses</option><option value="12">Ultimos 12 meses</option><option value="3">Ultimos 3 meses</option></select>
+            <button class="btn btn-outline btn-sm" onclick="exportFinanzas()">↓ Exportar CSV</button>
+          </div>
+        </div>
+        <div style="position:relative;height:260px"><canvas id="fin-chart"></canvas></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+        <div class="card">
+          <div class="sec-title" style="margin-bottom:12px;color:#3d8a5a">+ Nuevo Ingreso</div>
+          <div class="form-row" style="margin-bottom:8px"><label>Fecha</label><input type="date" id="fin-ing-fecha"></div>
+          <div class="form-row" style="margin-bottom:8px"><label>Categoria</label>
+            <select id="fin-ing-cat"><option>Mercado Libre</option><option>Ventas directas</option><option>Mayoristas</option><option>Presupuestos</option><option>Otros ingresos</option></select>
+          </div>
+          <div class="form-row" style="margin-bottom:8px"><label>Monto ($)</label><input type="number" id="fin-ing-monto" placeholder="0"></div>
+          <div class="form-row" style="margin-bottom:8px"><label>Descripcion</label><input type="text" id="fin-ing-desc" placeholder="Detalle..."></div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><input type="checkbox" id="fin-ing-pend" style="width:auto"><label style="font-size:12px;color:var(--txt2)">Marcar como pendiente</label></div>
+          <button onclick="saveMovimiento('ingreso')" style="width:100%;padding:10px;background:linear-gradient(135deg,#3d8a5a,#4aab70);color:#fff;border:none;border-radius:var(--brs);font-family:'Barlow',sans-serif;font-weight:700;font-size:12px;cursor:pointer">Registrar ingreso</button>
+        </div>
+        <div class="card">
+          <div class="sec-title" style="margin-bottom:12px;color:#b84848">- Nuevo Egreso</div>
+          <div class="form-row" style="margin-bottom:8px"><label>Fecha</label><input type="date" id="fin-eg-fecha"></div>
+          <div class="form-row" style="margin-bottom:8px"><label>Categoria</label>
+            <select id="fin-eg-cat" onchange="updateSubcatEgreso()"><option>Compras</option><option>Gastos</option></select>
+          </div>
+          <div class="form-row" style="margin-bottom:8px"><label>Subcategoria</label>
+            <select id="fin-eg-subcat"><option>Materias primas</option><option>Insumos</option><option>Equipamiento</option><option>Sueldos</option><option>Alquiler</option><option>Marketing</option><option>Servicios</option><option>Otros</option></select>
+          </div>
+          <div class="form-row" style="margin-bottom:8px"><label>Monto ($)</label><input type="number" id="fin-eg-monto" placeholder="0"></div>
+          <div class="form-row" style="margin-bottom:8px"><label>Descripcion</label><input type="text" id="fin-eg-desc" placeholder="Detalle..."></div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><input type="checkbox" id="fin-eg-pend" style="width:auto"><label style="font-size:12px;color:var(--txt2)">Marcar como pendiente</label></div>
+          <button onclick="saveMovimiento('egreso')" style="width:100%;padding:10px;background:linear-gradient(135deg,#b84848,#d06060);color:#fff;border:none;border-radius:var(--brs);font-family:'Barlow',sans-serif;font-weight:700;font-size:12px;cursor:pointer">Registrar egreso</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="sec-header" style="margin-bottom:12px">
+          <div class="sec-title">Movimientos</div>
+          <div style="display:flex;gap:8px">
+            <select id="fin-mov-filter" onchange="renderMovimientosTable()" style="font-size:11px;padding:4px 8px;width:auto"><option value="">Todos</option><option value="ingreso">Ingresos</option><option value="egreso">Egresos</option></select>
+            <select id="fin-mes-filter" onchange="renderMovimientosTable()" style="font-size:11px;padding:4px 8px;width:auto"><option value="">Todos los meses</option></select>
+          </div>
+        </div>
+        <div class="tbl-wrap"><table><thead><tr><th>Fecha</th><th>Tipo</th><th>Categoria</th><th>Descripcion</th><th>Monto</th><th>Estado</th><th></th></tr></thead><tbody id="fin-mov-table"></tbody></table></div>
+      </div>
     </div>
+</div>
   </div>
 </div>
 
@@ -1258,7 +1311,8 @@ async function loadAll(){
       sbGet('crm_insumos','&order=created_at.desc'),sbGet('crm_pedidos','&order=created_at.desc'),
       sbGet('crm_referencias','&order=created_at.desc'),sbGet('crm_gastos2','&order=created_at.desc'),
       sbGet('crm_facturas','&order=created_at.desc'),
-      sbGet('crm_pagos_fijos','&order=created_at.desc')
+      sbGet('crm_pagos_fijos','&order=created_at.desc'),
+      sbGet('crm_movimientos','&order=created_at.desc')
     ]);
     var tasks=results[0],found=results[1];
     S.tasks=tasks||[];
@@ -1270,7 +1324,7 @@ async function loadAll(){
     S.mets=results[5]||[];S.leads=results[6]||[];S.clients=results[7]||[];
     S.ing=results[8]||[];S.gas=results[9]||[];S.angulos=results[10]||[];
     S.tareas=(results[11]||[]).map(function(t){return Object.assign({},t,{comments:Array.isArray(t.comments)?t.comments:[]})});
-    S.insumos=results[12]||[];S.pedidos=results[13]||[];S.referencias=results[14]||[];S.gastos2=results[15]||[];S.facturas=results[16]||[];S.pagos_fijos=results[17]||[];
+    S.insumos=results[12]||[];S.pedidos=results[13]||[];S.referencias=results[14]||[];S.gastos2=results[15]||[];S.facturas=results[16]||[];S.pagos_fijos=results[17]||[];S.movimientos=results[18]||[];
     document.getElementById('loader').style.display='none';
     renderDash();
     loadAiKey();
@@ -1295,7 +1349,8 @@ async function refreshData(){
       sbGet('crm_insumos','&order=created_at.desc'),sbGet('crm_pedidos','&order=created_at.desc'),
       sbGet('crm_referencias','&order=created_at.desc'),sbGet('crm_gastos2','&order=created_at.desc'),
       sbGet('crm_facturas','&order=created_at.desc'),
-      sbGet('crm_pagos_fijos','&order=created_at.desc')
+      sbGet('crm_pagos_fijos','&order=created_at.desc'),
+      sbGet('crm_movimientos','&order=created_at.desc')
     ]);
     S.content=results[0]||[];S.hists=results[1]||[];S.refs=results[2]||[];
     S.mets=results[3]||[];S.leads=results[4]||[];S.clients=results[5]||[];
@@ -2381,6 +2436,182 @@ function clearGenResults(){
 }
 
 
+
+// ===== FINANZAS =====
+var finChart = null;
+var SUBCATS = {
+  'Compras': ['Materias primas','Insumos','Equipamiento','Otros'],
+  'Gastos': ['Sueldos','Alquiler','Marketing','Servicios','Contador','Publicidad','Otros']
+};
+
+function initFinanzasDates(){
+  var today = new Date().toISOString().split('T')[0];
+  var ingFecha = document.getElementById('fin-ing-fecha');
+  var egFecha = document.getElementById('fin-eg-fecha');
+  if(ingFecha && !ingFecha.value) ingFecha.value = today;
+  if(egFecha && !egFecha.value) egFecha.value = today;
+}
+
+function updateSubcatEgreso(){
+  var cat = document.getElementById('fin-eg-cat') && document.getElementById('fin-eg-cat').value;
+  var subcat = document.getElementById('fin-eg-subcat');
+  if(!subcat) return;
+  var opts = SUBCATS[cat] || ['Otros'];
+  subcat.innerHTML = opts.map(function(o){return '<option>'+o+'</option>'}).join('');
+}
+
+function populateMesFilterFin(){
+  var sel = document.getElementById('fin-mes-filter'); if(!sel) return;
+  sel.innerHTML = '<option value="">Todos los meses</option>';
+  var meses = {};
+  (S.movimientos||[]).forEach(function(m){
+    if(m.fecha){var k=m.fecha.substring(0,7);meses[k]=true;}
+  });
+  Object.keys(meses).sort().reverse().forEach(function(k){
+    var parts=k.split('-');
+    var label=MESES_FULL[parseInt(parts[1])-1]+' '+parts[0];
+    sel.innerHTML+='<option value="'+k+'">'+label+'</option>';
+  });
+}
+
+function renderFinanzas(){
+  initFinanzasDates();
+  populateMesFilterFin();
+  renderFinMetrics();
+  renderFinChart();
+  renderMovimientosTable();
+}
+
+function renderFinMetrics(){
+  var movs = S.movimientos||[];
+  var now = new Date();
+  var mesActual = now.getFullYear()+'-'+(String(now.getMonth()+1).padStart(2,'0'));
+  var mesMov = movs.filter(function(m){return m.fecha&&m.fecha.startsWith(mesActual)});
+  var totalIngMes = mesMov.filter(function(m){return m.tipo==='ingreso'&&!m.pendiente}).reduce(function(s,m){return s+(Number(m.monto)||0)},0);
+  var totalEgMes = mesMov.filter(function(m){return m.tipo==='egreso'&&!m.pendiente}).reduce(function(s,m){return s+(Number(m.monto)||0)},0);
+  var resultado = totalIngMes - totalEgMes;
+  var pendientes = movs.filter(function(m){return m.pendiente}).reduce(function(s,m){return s+(Number(m.monto)||0)},0);
+  var el = document.getElementById('fin-metrics'); if(!el) return;
+  el.innerHTML = [
+    {l:'Ingresos del mes',v:fmtPeso(totalIngMes),c:'#3d8a5a'},
+    {l:'Egresos del mes',v:fmtPeso(totalEgMes),c:'#b84848'},
+    {l:'Resultado',v:fmtPeso(resultado),c:resultado>=0?'#3d8a5a':'#b84848'},
+    {l:'Pendientes',v:fmtPeso(pendientes),c:'#c08830'}
+  ].map(function(x){
+    return '<div class="metric-card"><div class="met-label">'+x.l+'</div>'
+      +'<div class="met-val" style="font-size:clamp(16px,2vw,24px);color:'+x.c+'">'+x.v+'</div></div>';
+  }).join('');
+}
+
+function renderFinChart(){
+  var canvas = document.getElementById('fin-chart'); if(!canvas) return;
+  var meses = parseInt(document.getElementById('fin-chart-filter')&&document.getElementById('fin-chart-filter').value||'6');
+  var labels=[], ingresos=[], egresos=[];
+  var now = new Date();
+  for(var i=meses-1;i>=0;i--){
+    var d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    var key = d.getFullYear()+'-'+(String(d.getMonth()+1).padStart(2,'0'));
+    labels.push(MESES_NOMBRES[d.getMonth()]+' '+String(d.getFullYear()).slice(2));
+    var movsMes = (S.movimientos||[]).filter(function(m){return m.fecha&&m.fecha.startsWith(key)&&!m.pendiente});
+    ingresos.push(movsMes.filter(function(m){return m.tipo==='ingreso'}).reduce(function(s,m){return s+(Number(m.monto)||0)},0));
+    egresos.push(movsMes.filter(function(m){return m.tipo==='egreso'}).reduce(function(s,m){return s+(Number(m.monto)||0)},0));
+  }
+  if(finChart){finChart.destroy();finChart=null;}
+  finChart = new Chart(canvas, {
+    type:'bar',
+    data:{
+      labels:labels,
+      datasets:[
+        {label:'Ingresos',data:ingresos,backgroundColor:'rgba(61,138,90,0.7)',borderColor:'#3d8a5a',borderWidth:1,borderRadius:4},
+        {label:'Egresos',data:egresos,backgroundColor:'rgba(184,72,72,0.7)',borderColor:'#b84848',borderWidth:1,borderRadius:4}
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{font:{family:'Barlow',size:11}}}},
+      scales:{
+        y:{ticks:{callback:function(v){return '$'+(v/1000).toFixed(0)+'k'},font:{size:10}},grid:{color:'rgba(0,0,0,0.05)'}},
+        x:{ticks:{font:{size:10}},grid:{display:false}}
+      }
+    }
+  });
+}
+
+function renderMovimientosTable(){
+  var tb = document.getElementById('fin-mov-table'); if(!tb) return;
+  var typeFilter = document.getElementById('fin-mov-filter')&&document.getElementById('fin-mov-filter').value||'';
+  var mesFilter = document.getElementById('fin-mes-filter')&&document.getElementById('fin-mes-filter').value||'';
+  var movs = (S.movimientos||[]).filter(function(m){
+    if(typeFilter&&m.tipo!==typeFilter) return false;
+    if(mesFilter&&m.fecha&&!m.fecha.startsWith(mesFilter)) return false;
+    return true;
+  }).sort(function(a,b){return (b.fecha||'').localeCompare(a.fecha||'')});
+  if(!movs.length){tb.innerHTML='<tr><td colspan="7" style="color:var(--txt3);text-align:center;padding:20px">Sin movimientos</td></tr>';return;}
+  tb.innerHTML='';
+  movs.forEach(function(m){
+    var tr=document.createElement('tr');
+    var isIng=m.tipo==='ingreso';
+    var color=isIng?'#3d8a5a':'#b84848';
+    var sign=isIng?'+':'-';
+    tr.innerHTML='<td>'+fmtDate(m.fecha)+'</td>'
+      +'<td><span class="'+(isIng?'bgr':'br')+'">'+m.tipo+'</span></td>'
+      +'<td><span style="font-size:11px">'+(m.categoria||'--')+(m.subcategoria?' · '+m.subcategoria:'')+'</span></td>'
+      +'<td class="td-trunc">'+(m.descripcion||'--')+'</td>'
+      +'<td style="font-weight:700;color:'+color+'">'+sign+fmtPeso(m.monto)+'</td>'
+      +'<td>'+(m.pendiente?'<span class="ba">Pendiente</span>':'<span class="bgr">OK</span>')+'</td>'
+      +'<td><button class="btn-del">x</button></td>';
+    tr.querySelector('.btn-del').onclick=(function(id){return function(){delMovimiento(id)}})(m.id);
+    tb.appendChild(tr);
+  });
+}
+
+async function saveMovimiento(tipo){
+  var isIng=tipo==='ingreso';
+  var fecha=document.getElementById(isIng?'fin-ing-fecha':'fin-eg-fecha')&&document.getElementById(isIng?'fin-ing-fecha':'fin-eg-fecha').value;
+  var monto=Number(document.getElementById(isIng?'fin-ing-monto':'fin-eg-monto')&&document.getElementById(isIng?'fin-ing-monto':'fin-eg-monto').value)||0;
+  var cat=document.getElementById(isIng?'fin-ing-cat':'fin-eg-cat')&&document.getElementById(isIng?'fin-ing-cat':'fin-eg-cat').value||'';
+  var desc=document.getElementById(isIng?'fin-ing-desc':'fin-eg-desc')&&document.getElementById(isIng?'fin-ing-desc':'fin-eg-desc').value||'';
+  var pend=document.getElementById(isIng?'fin-ing-pend':'fin-eg-pend')&&document.getElementById(isIng?'fin-ing-pend':'fin-eg-pend').checked||false;
+  var subcat=!isIng?(document.getElementById('fin-eg-subcat')&&document.getElementById('fin-eg-subcat').value||''):'';
+  if(!monto){toast('Ingresa el monto',true);return;}
+  var row={id:uid(),tipo:tipo,categoria:cat,subcategoria:subcat,monto:monto,fecha:fecha||new Date().toISOString().split('T')[0],descripcion:desc,pendiente:pend};
+  await sbInsert('crm_movimientos',row);
+  if(!S.movimientos)S.movimientos=[];
+  S.movimientos.unshift(row);
+  // Reset monto and desc
+  var montoEl=document.getElementById(isIng?'fin-ing-monto':'fin-eg-monto');if(montoEl)montoEl.value='';
+  var descEl=document.getElementById(isIng?'fin-ing-desc':'fin-eg-desc');if(descEl)descEl.value='';
+  var pendEl=document.getElementById(isIng?'fin-ing-pend':'fin-eg-pend');if(pendEl)pendEl.checked=false;
+  toast((isIng?'Ingreso':'Egreso')+' registrado');
+  renderFinanzas();
+}
+
+async function delMovimiento(id){
+  if(!confirm('Eliminar movimiento?'))return;
+  await sbDelete('crm_movimientos',id);
+  S.movimientos=(S.movimientos||[]).filter(function(x){return x.id!==id});
+  renderFinanzas();
+}
+
+function exportFinanzas(){
+  var movs=S.movimientos||[];
+  if(!movs.length){toast('Sin movimientos para exportar',true);return;}
+  var header='Fecha,Tipo,Categoria,Subcategoria,Descripcion,Monto,Pendiente';
+  var lines=[header];
+  movs.sort(function(a,b){return (b.fecha||'').localeCompare(a.fecha||'')}).forEach(function(m){
+    var row=[m.fecha||'',m.tipo||'',m.categoria||'',m.subcategoria||'',
+      (m.descripcion||'').replace(/,/g,' '),m.monto||0,m.pendiente?'Si':'No'];
+    lines.push(row.join(','));
+  });
+  var csv=lines.join(String.fromCharCode(13,10));
+  var blob=new Blob([String.fromCharCode(0xFEFF)+csv],{type:'text/csv;charset=utf-8'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='finanzas-changui-'+new Date().toISOString().split('T')[0]+'.csv';
+  a.click();
+  toast('CSV descargado');
+}
+
 // ===== CONTABILIDAD =====
 var CONTA_PASS='Eldetoyelzara';
 var contaUnlocked=false;
@@ -2446,6 +2677,7 @@ function switchContaTab(tab,el){
   el.classList.add('active');
   document.getElementById('conta-panel-'+tab).classList.add('active');
   if(tab==='pagos')renderPagosFijos();
+  if(tab==='finanzas')renderFinanzas();
 }
 
 function populateAnioFilters(){
