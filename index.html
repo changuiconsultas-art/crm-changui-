@@ -2504,7 +2504,7 @@ function renderFinMetrics(){
 }
 
 function renderFinChart(){
-  var canvas = document.getElementById('fin-chart'); if(!canvas) return;
+  var canvas = document.getElementById('fin-chart'); if(!canvas||!canvas.offsetParent) return;
   var meses = parseInt(document.getElementById('fin-chart-filter')&&document.getElementById('fin-chart-filter').value||'6');
   var labels=[], ingresos=[], egresos=[];
   var now = new Date();
@@ -2637,6 +2637,7 @@ function renderContabilidad(){
   renderContaTomas();
   renderPagosFijos();
   renderContaPagosAlert();
+  renderFinanzas();
 }
 
 
@@ -2677,7 +2678,7 @@ function switchContaTab(tab,el){
   el.classList.add('active');
   document.getElementById('conta-panel-'+tab).classList.add('active');
   if(tab==='pagos')renderPagosFijos();
-  if(tab==='finanzas')renderFinanzas();
+  if(tab==='finanzas')setTimeout(function(){renderFinanzas()},50);
 }
 
 function populateAnioFilters(){
