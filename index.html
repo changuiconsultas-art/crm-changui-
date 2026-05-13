@@ -951,6 +951,7 @@ textarea{resize:vertical;min-height:80px}
           </div>
           <div class="form-row" style="margin-bottom:8px"><label>Monto ($)</label><input type="number" id="fin-ing-monto" placeholder="0"></div>
           <div class="form-row" style="margin-bottom:8px"><label>Descripcion</label><input type="text" id="fin-ing-desc" placeholder="Detalle..."></div>
+          <div class="form-row" style="margin-bottom:8px"><label>Cuenta destino</label><select id="fin-ing-cuenta"><option value="">Sin especificar</option></select></div>
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><input type="checkbox" id="fin-ing-pend" style="width:auto"><label style="font-size:12px;color:var(--txt2)">Marcar como pendiente</label></div>
           <button onclick="saveMovimiento('ingreso')" style="width:100%;padding:10px;background:linear-gradient(135deg,#3d8a5a,#4aab70);color:#fff;border:none;border-radius:var(--brs);font-family:'Barlow',sans-serif;font-weight:700;font-size:12px;cursor:pointer">Registrar ingreso</button>
         </div>
@@ -969,6 +970,7 @@ textarea{resize:vertical;min-height:80px}
           </div>
           <div class="form-row" style="margin-bottom:8px"><label>Monto ($)</label><input type="number" id="fin-eg-monto" placeholder="0"></div>
           <div class="form-row" style="margin-bottom:8px"><label>Descripcion</label><input type="text" id="fin-eg-desc" placeholder="Detalle..."></div>
+          <div class="form-row" style="margin-bottom:8px"><label>Cuenta origen</label><select id="fin-eg-cuenta"><option value="">Sin especificar</option></select></div>
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><input type="checkbox" id="fin-eg-pend" style="width:auto"><label style="font-size:12px;color:var(--txt2)">Marcar como pendiente</label></div>
           <button onclick="saveMovimiento('egreso')" style="width:100%;padding:10px;background:linear-gradient(135deg,#b84848,#d06060);color:#fff;border:none;border-radius:var(--brs);font-family:'Barlow',sans-serif;font-weight:700;font-size:12px;cursor:pointer">Registrar egreso</button>
         </div>
@@ -981,8 +983,22 @@ textarea{resize:vertical;min-height:80px}
             <select id="fin-mes-filter" onchange="renderMovimientosTable()" style="font-size:11px;padding:4px 8px;width:auto"><option value="">Todos los meses</option></select>
           </div>
         </div>
-        <div class="tbl-wrap"><table><thead><tr><th>Fecha</th><th>Tipo</th><th>Categoria</th><th>Descripcion</th><th>Monto</th><th>Estado</th><th></th></tr></thead><tbody id="fin-mov-table"></tbody></table></div>
+        <div class="tbl-wrap"><table><thead><tr><th>Fecha</th><th>Tipo</th><th>Categoria</th><th>Cuenta</th><th>Descripcion</th><th>Monto</th><th>Estado</th><th></th></tr></thead><tbody id="fin-mov-table"></tbody></table></div>
       </div>
+
+      <!-- CUENTAS -->
+      <div class="card" style="margin-top:20px">
+        <div class="sec-header" style="margin-bottom:14px">
+          <div class="sec-title">💳 Cuentas</div>
+          <button class="btn btn-gold btn-sm" onclick="openModal('modal-cuenta')">+ Nueva cuenta</button>
+        </div>
+        <div id="cuentas-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px"></div>
+        <div style="background:linear-gradient(135deg,rgba(196,152,32,0.08),rgba(196,152,32,0.04));border:1px solid rgba(196,152,32,0.2);border-radius:var(--brs);padding:14px 18px;display:flex;justify-content:space-between;align-items:center">
+          <div style="font-size:13px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:0.05em">Total disponible (ARS)</div>
+          <div id="cuentas-total" style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:28px;color:var(--gold)">$0</div>
+        </div>
+      </div>
+
     </div>
 </div>
 
@@ -1245,6 +1261,36 @@ textarea{resize:vertical;min-height:80px}
   </div>
 </div>
 
+<!-- Modal Nueva Cuenta -->
+<div class="modal-bg" id="modal-cuenta" onclick="modalBgClick(event,this)">
+  <div class="modal">
+    <div class="modal-title" id="mc-cuenta-title">+ Nueva Cuenta</div>
+    <input type="hidden" id="mcc-id">
+    <div class="form-row"><label>Nombre</label><input type="text" id="mcc-nombre" placeholder="Ej: Galicia — Borra Verde"></div>
+    <div class="form-grid2">
+      <div class="form-row"><label>Tipo</label>
+        <select id="mcc-tipo">
+          <option value="banco">Banco</option>
+          <option value="digital">Billetera digital</option>
+          <option value="efectivo">Efectivo</option>
+          <option value="inversion">Inversión</option>
+        </select>
+      </div>
+      <div class="form-row"><label>Moneda</label>
+        <select id="mcc-moneda">
+          <option value="ARS">ARS — Pesos</option>
+          <option value="USD">USD — Dólares</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row"><label>Saldo inicial ($)</label><input type="number" id="mcc-saldo" placeholder="0"></div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" onclick="closeModal('modal-cuenta')">Cancelar</button>
+      <button class="btn btn-gold btn-sm" onclick="saveCuenta()">Guardar</button>
+    </div>
+  </div>
+</div>
+
 <div id="toast-container"></div>
 <script>
 // SUPABASE
@@ -1293,7 +1339,7 @@ function stateClass(s){return{Idea:'bgy','Guion listo':'bb',Grabando:'ba',Editan
 function fmtMoney(u,a,e){var p=[];if(u&&Number(u)!=0)p.push('$'+Number(u).toLocaleString('es-AR'));if(a&&Number(a)!=0)p.push('ARS '+Number(a).toLocaleString('es-AR'));if(e&&Number(e)!=0)p.push('EUR '+Number(e).toLocaleString('es-AR'));return p.join(' / ')||'--'}
 
 // STATE
-var S={tasks:[],found:{avatar:{},offer:{}},foundId:null,content:[],hists:[],refs:[],mets:[],leads:[],clients:[],ing:[],gas:[],angulos:[],tareas:[],insumos:[],pedidos:[],referencias:[],gastos2:[],facturas:[],pagos_fijos:[]};
+var S={tasks:[],found:{avatar:{},offer:{}},foundId:null,content:[],hists:[],refs:[],mets:[],leads:[],clients:[],ing:[],gas:[],angulos:[],tareas:[],insumos:[],pedidos:[],referencias:[],gastos2:[],facturas:[],pagos_fijos:[],cuentas:[]};
 var TEAM=['Sol','Colo','Guada','Deto','Tomi'];
 var TEAM_COLORS=['#d4a832','#3d8a5a','#7a4ab8','#3d6aaa','#b84848'];
 var ESTADOS_PEDIDO=['Diseño shablón enviado','Shablón listo','Tubos estampados','Bases pegadas','Envío embalado'];
@@ -1322,7 +1368,8 @@ async function loadAll(){
       sbGet('crm_referencias','&order=created_at.desc'),sbGet('crm_gastos2','&order=created_at.desc'),
       sbGet('crm_facturas','&order=created_at.desc'),
       sbGet('crm_pagos_fijos','&order=created_at.desc'),
-      sbGet('crm_movimientos','&order=created_at.desc')
+      sbGet('crm_movimientos','&order=created_at.desc'),
+      sbGet('crm_cuentas','&order=created_at.desc')
     ]);
     var tasks=results[0],found=results[1];
     S.tasks=tasks||[];
@@ -1334,7 +1381,7 @@ async function loadAll(){
     S.mets=results[5]||[];S.leads=results[6]||[];S.clients=results[7]||[];
     S.ing=results[8]||[];S.gas=results[9]||[];S.angulos=results[10]||[];
     S.tareas=(results[11]||[]).map(function(t){return Object.assign({},t,{comments:Array.isArray(t.comments)?t.comments:[]})});
-    S.insumos=results[12]||[];S.pedidos=results[13]||[];S.referencias=results[14]||[];S.gastos2=results[15]||[];S.facturas=results[16]||[];S.pagos_fijos=results[17]||[];S.movimientos=results[18]||[];
+    S.insumos=results[12]||[];S.pedidos=results[13]||[];S.referencias=results[14]||[];S.gastos2=results[15]||[];S.facturas=results[16]||[];S.pagos_fijos=results[17]||[];S.movimientos=results[18]||[];S.cuentas=results[19]||[];
     document.getElementById('loader').style.display='none';
     renderDash();
     loadAiKey();
@@ -1360,7 +1407,8 @@ async function refreshData(){
       sbGet('crm_referencias','&order=created_at.desc'),sbGet('crm_gastos2','&order=created_at.desc'),
       sbGet('crm_facturas','&order=created_at.desc'),
       sbGet('crm_pagos_fijos','&order=created_at.desc'),
-      sbGet('crm_movimientos','&order=created_at.desc')
+      sbGet('crm_movimientos','&order=created_at.desc'),
+      sbGet('crm_cuentas','&order=created_at.desc')
     ]);
     S.content=results[0]||[];S.hists=results[1]||[];S.refs=results[2]||[];
     S.mets=results[3]||[];S.leads=results[4]||[];S.clients=results[5]||[];
@@ -2548,6 +2596,7 @@ function saveCustomSubcat(){
 function initFinanzasDates(){
   populateIngCats();
   populateEgSubcats();
+  populateCuentaSelects();
   var today = new Date().toISOString().split('T')[0];
   var ingFecha = document.getElementById('fin-ing-fecha');
   var egFecha = document.getElementById('fin-eg-fecha');
@@ -2580,6 +2629,7 @@ function renderFinanzas(){
   renderFinMetrics();
   renderFinChart();
   renderMovimientosTable();
+  renderCuentas();
 }
 
 function renderFinMetrics(){
@@ -2656,6 +2706,7 @@ function renderMovimientosTable(){
     tr.innerHTML='<td>'+fmtDate(m.fecha)+'</td>'
       +'<td><span class="'+(isIng?'bgr':'br')+'">'+m.tipo+'</span></td>'
       +'<td><span style="font-size:11px">'+(m.categoria||'--')+(m.subcategoria?' · '+m.subcategoria:'')+'</span></td>'
+      +'<td style="font-size:11px">'+(m.cuenta_id?(S.cuentas||[]).find(function(c){return c.id===m.cuenta_id})?.nombre||'--':'--')+'</td>'
       +'<td class="td-trunc">'+(m.descripcion||'--')+'</td>'
       +'<td style="font-weight:700;color:'+color+'">'+sign+fmtPeso(m.monto)+'</td>'
       +'<td>'+(m.pendiente?'<span class="ba">Pendiente</span>':'<span class="bgr">OK</span>')+'</td>'
@@ -2674,7 +2725,8 @@ async function saveMovimiento(tipo){
   var pend=document.getElementById(isIng?'fin-ing-pend':'fin-eg-pend')&&document.getElementById(isIng?'fin-ing-pend':'fin-eg-pend').checked||false;
   var subcat=!isIng?(document.getElementById('fin-eg-subcat')&&document.getElementById('fin-eg-subcat').value||''):'';
   if(!monto){toast('Ingresa el monto',true);return;}
-  var row={id:uid(),tipo:tipo,categoria:cat,subcategoria:subcat,monto:monto,fecha:fecha||new Date().toISOString().split('T')[0],descripcion:desc,pendiente:pend};
+  var cuentaId=document.getElementById(isIng?'fin-ing-cuenta':'fin-eg-cuenta')&&document.getElementById(isIng?'fin-ing-cuenta':'fin-eg-cuenta').value||'';
+  var row={id:uid(),tipo:tipo,categoria:cat,subcategoria:subcat,monto:monto,fecha:fecha||new Date().toISOString().split('T')[0],descripcion:desc,pendiente:pend,cuenta_id:cuentaId||null};
   await sbInsert('crm_movimientos',row);
   if(!S.movimientos)S.movimientos=[];
   S.movimientos.unshift(row);
@@ -3216,6 +3268,133 @@ function renderContaPagosAlert(){
   if(pagosPend.length){
     alertEl.innerHTML='<div class="conta-warn" style="margin-bottom:14px">📅 Inicio de mes — Pagos pendientes de confirmar: <strong>'+pagosPend.map(function(p){return p.nombre}).join(', ')+'</strong></div>';
   }
+}
+
+
+// ===== CUENTAS =====
+var TIPO_ICONS = {banco:'🏦', digital:'📱', efectivo:'💵', inversion:'📈'};
+var TIPO_COLORS = {banco:'#3d6aaa', digital:'#7a4ab8', efectivo:'#3d8a5a', inversion:'#c08830'};
+
+function populateCuentaSelects(){
+  var cuentas = (S.cuentas||[]).filter(function(c){return c.activa});
+  ['fin-ing-cuenta','fin-eg-cuenta'].forEach(function(id){
+    var sel = document.getElementById(id); if(!sel) return;
+    var current = sel.value;
+    sel.innerHTML = '<option value="">Sin especificar</option>';
+    cuentas.forEach(function(c){
+      var opt = document.createElement('option');
+      opt.value = c.id;
+      opt.textContent = (TIPO_ICONS[c.tipo]||'💳') + ' ' + c.nombre + (c.moneda!=='ARS'?' ('+c.moneda+')':'');
+      sel.appendChild(opt);
+    });
+    if(current) sel.value = current;
+  });
+}
+
+function calcSaldoCuenta(cuentaId){
+  var cuenta = (S.cuentas||[]).find(function(c){return c.id===cuentaId});
+  if(!cuenta) return 0;
+  var saldo = Number(cuenta.saldo_inicial)||0;
+  (S.movimientos||[]).filter(function(m){return m.cuenta_id===cuentaId&&!m.pendiente}).forEach(function(m){
+    if(m.tipo==='ingreso') saldo += Number(m.monto)||0;
+    else saldo -= Number(m.monto)||0;
+  });
+  return saldo;
+}
+
+function renderCuentas(){
+  var grid = document.getElementById('cuentas-grid'); if(!grid) return;
+  var cuentas = (S.cuentas||[]).filter(function(c){return c.activa});
+  if(!cuentas.length){
+    grid.innerHTML='<div style="grid-column:1/-1;color:var(--txt3);font-size:12px;text-align:center;padding:20px">Sin cuentas</div>';
+    return;
+  }
+  grid.innerHTML='';
+  var totalARS = 0;
+  cuentas.forEach(function(c){
+    var saldo = calcSaldoCuenta(c.id);
+    if(c.moneda==='ARS') totalARS += saldo;
+    var col = TIPO_COLORS[c.tipo]||'#7a7870';
+    var icon = TIPO_ICONS[c.tipo]||'💳';
+    var card = document.createElement('div');
+    card.style.cssText='background:#fff;border:1px solid rgba(0,0,0,0.09);border-radius:var(--br);padding:14px 16px;box-shadow:0 1px 4px rgba(0,0,0,0.05)';
+    var header = document.createElement('div');
+    header.style.cssText='display:flex;align-items:center;justify-content:space-between;margin-bottom:8px';
+    header.innerHTML='<span style="font-size:18px">'+icon+'</span>';
+    var btns = document.createElement('div');
+    btns.style.cssText='display:flex;gap:4px';
+    var editBtn = document.createElement('button');
+    editBtn.textContent='Edit';
+    editBtn.style.cssText='background:transparent;border:1px solid rgba(0,0,0,0.1);color:var(--txt2);font-size:10px;cursor:pointer;padding:2px 7px;border-radius:4px;font-weight:700';
+    editBtn.onclick=(function(id){return function(){editCuenta(id)}})(c.id);
+    var delBtn = document.createElement('button');
+    delBtn.textContent='x';
+    delBtn.className='btn-del';
+    delBtn.onclick=(function(id){return function(){deleteCuenta(id)}})(c.id);
+    btns.appendChild(editBtn);btns.appendChild(delBtn);
+    header.appendChild(btns);
+    card.appendChild(header);
+    var nombre = document.createElement('div');
+    nombre.style.cssText='font-size:12px;font-weight:700;color:var(--txt);margin-bottom:6px';
+    nombre.textContent=c.nombre;
+    card.appendChild(nombre);
+    var saldoEl = document.createElement('div');
+    saldoEl.style.cssText="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:22px;color:"+col;
+    saldoEl.textContent=(c.moneda==='USD'?'U$D ':' $')+Math.abs(saldo).toLocaleString('es-AR');
+    card.appendChild(saldoEl);
+    var meta = document.createElement('div');
+    meta.style.cssText='font-size:10px;color:var(--txt3);margin-top:2px';
+    meta.textContent=c.moneda+' · '+c.tipo;
+    card.appendChild(meta);
+    grid.appendChild(card);
+  });
+  var totalEl = document.getElementById('cuentas-total');
+  if(totalEl) totalEl.textContent = '$'+totalARS.toLocaleString('es-AR');
+}
+
+function editCuenta(id){
+  var c = (S.cuentas||[]).find(function(x){return x.id===id}); if(!c) return;
+  document.getElementById('mcc-id').value = c.id;
+  document.getElementById('mcc-nombre').value = c.nombre||'';
+  document.getElementById('mcc-tipo').value = c.tipo||'banco';
+  document.getElementById('mcc-moneda').value = c.moneda||'ARS';
+  document.getElementById('mcc-saldo').value = c.saldo_inicial||0;
+  document.getElementById('mc-cuenta-title').textContent = 'Editar Cuenta';
+  openModal('modal-cuenta');
+}
+
+async function deleteCuenta(id){
+  if(!confirm('Desactivar esta cuenta?')) return;
+  var c = (S.cuentas||[]).find(function(x){return x.id===id}); if(!c) return;
+  c.activa = false;
+  await sbUpsert('crm_cuentas', c);
+  toast('Cuenta desactivada');
+  renderCuentas();
+  populateCuentaSelects();
+}
+
+async function saveCuenta(){
+  var v = function(id){return document.getElementById(id)&&document.getElementById(id).value||''};
+  var nombre = v('mcc-nombre').trim();
+  if(!nombre){toast('Ingresa el nombre',true);return;}
+  var id = v('mcc-id');
+  if(id){
+    var c = (S.cuentas||[]).find(function(x){return x.id===id}); if(!c) return;
+    c.nombre=nombre; c.tipo=v('mcc-tipo'); c.moneda=v('mcc-moneda'); c.saldo_inicial=Number(v('mcc-saldo'))||0;
+    await sbUpsert('crm_cuentas', c);
+    toast('Cuenta actualizada');
+  }else{
+    var row = {id:uid(),nombre:nombre,tipo:v('mcc-tipo'),moneda:v('mcc-moneda'),saldo_inicial:Number(v('mcc-saldo'))||0,activa:true};
+    await sbInsert('crm_cuentas', row);
+    if(!S.cuentas) S.cuentas=[];
+    S.cuentas.push(row);
+    toast('Cuenta creada');
+  }
+  document.getElementById('mc-cuenta-title').textContent = '+ Nueva Cuenta';
+  document.getElementById('mcc-id').value = '';
+  closeModal('modal-cuenta');
+  renderCuentas();
+  populateCuentaSelects();
 }
 
 // ===== INIT =====
