@@ -2737,7 +2737,10 @@ function renderMovimientosTable(){
     if(typeFilter&&m.tipo!==typeFilter) return false;
     if(mesFilter&&m.fecha&&!m.fecha.startsWith(mesFilter)) return false;
     return true;
-  }).sort(function(a,b){return (b.fecha||'').localeCompare(a.fecha||'')});
+  }).sort(function(a,b){
+    var da=new Date(a.fecha||'1900-01-01'),db=new Date(b.fecha||'1900-01-01');
+    return db-da;
+  });
   if(!movs.length){tb.innerHTML='<tr><td colspan="7" style="color:var(--txt3);text-align:center;padding:20px">Sin movimientos</td></tr>';return;}
   tb.innerHTML='';
   movs.forEach(function(m){
