@@ -523,7 +523,7 @@ textarea{resize:vertical;min-height:80px}
 .iva-value.favor{color:#3d8a5a}.iva-value.pagar{color:#b84848}.iva-value.neto{color:#3d6aaa}
 .mono-progress{height:12px;background:rgba(0,0,0,0.06);border-radius:6px;overflow:hidden;margin:8px 0}
 .mono-bar{height:100%;border-radius:6px;transition:width 0.5s ease}
-.pago-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:var(--brs);border:1px solid rgba(0,0,0,0.07);background:#fff;margin-bottom:8px;transition:all 0.15s}
+.pago-item{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-radius:var(--brs);border:1px solid rgba(0,0,0,0.07);background:#fff;margin-bottom:8px;transition:all 0.15s}
 .pago-item.pagado{opacity:0.5}
 .pago-item.pagado .pago-nombre{text-decoration:line-through;color:var(--txt3)}
 .pago-nombre{font-size:13px;font-weight:600;color:var(--txt);flex:1}
@@ -882,10 +882,10 @@ textarea{resize:vertical;min-height:80px}
     <div id="conta-pagos-alert" style="margin-bottom:14px"></div>
     <div class="conta-entity-tabs">
       <button class="conta-entity-tab active" onclick="switchContaTab('finanzas',this)">📊 Finanzas</button>
+      <button class="conta-entity-tab" onclick="switchContaTab('pagos',this)">💳 Pagos fijos</button>
       <button class="conta-entity-tab" onclick="switchContaTab('borra',this)">🏢 Borra Verde SRL</button>
       <button class="conta-entity-tab" onclick="switchContaTab('joaquin',this)">👤 Joaquin</button>
       <button class="conta-entity-tab" onclick="switchContaTab('tomas',this)">👤 Tomas</button>
-      <button class="conta-entity-tab" onclick="switchContaTab('pagos',this)">💳 Pagos fijos</button>
     </div>
     <!-- BORRA VERDE -->
     <div class="conta-panel" id="conta-panel-borra">
@@ -3257,12 +3257,34 @@ function renderPagosFijos(){
     else totalPagado+=(Number(p.monto)||0);
     var card=document.createElement('div');
     card.className='pago-item'+(p.pagado?' pagado':'');
-    card.innerHTML='<div class="toggle-check'+(p.pagado?' on':'')+'"></div>'
-      +'<div style="flex:1"><div class="pago-nombre">'+p.nombre+'</div>'
-      +'<div class="pago-venc">Vence: '+(PAGOS_DEFAULT.find(function(d){return d.nombre===p.nombre})||{dia:'--'}).dia+'</div>'
-      +(p.notas?'<div style="font-size:10px;color:var(--txt3)">'+p.notas+'</div>':'')+'</div>'
-      +(p.monto?'<div class="pago-monto">'+fmtPeso(p.monto)+'</div>':'<div style="font-size:11px;color:var(--txt3)">sin monto</div>');
-    card.querySelector('.toggle-check').onclick=(function(pago){return function(){togglePagoFijo(pago)}})(p);
+    card.innerHTML='';
+    // Toggle check
+    var chk=document.createElement('div');
+    chk.className='toggle-check'+(p.pagado?' on':'');
+    card.appendChild(chk);
+    // Info section
+    var info=document.createElement('div');
+    info.style.cssText='flex:1';
+    var defPago=PAGOS_DEFAULT.find(function(d){return d.nombre===p.nombre})||{dia:'--'};
+    info.innerHTML='<div class="pago-nombre">'+p.nombre+'</div>'
+      +'<div class="pago-venc">Vence: '+defPago.dia+'</div>';
+    // Notes area
+    var notasWrap=document.createElement('div');
+    notasWrap.style.cssText='margin-top:6px';
+    var notasEl=document.createElement('textarea');
+    notasEl.placeholder='Notas, CBU, datos de pago...';
+    notasEl.value=p.notas||'';
+    notasEl.style.cssText="width:100%;font-size:11px;color:var(--txt2);background:rgba(0,0,0,0.03);border:1px solid rgba(0,0,0,0.08);border-radius:6px;padding:6px 8px;resize:none;min-height:52px;line-height:1.4";
+    notasEl.onblur=(function(pago,el){return function(){savePagoNotas(pago,el.value)}})(p,notasEl);
+    notasWrap.appendChild(notasEl);
+    info.appendChild(notasWrap);
+    card.appendChild(info);
+    // Monto
+    var montoEl=document.createElement('div');
+    montoEl.style.cssText='display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0';
+    montoEl.innerHTML=(p.monto?'<div class="pago-monto">'+fmtPeso(p.monto)+'</div>':'<div style="font-size:11px;color:var(--txt3)">sin monto</div>');
+    card.appendChild(montoEl);
+    chk.onclick=(function(pago){return function(){togglePagoFijo(pago)}})(p);
     list.appendChild(card);
   });
   var summary=document.createElement('div');
@@ -3270,6 +3292,23 @@ function renderPagosFijos(){
   summary.innerHTML=(totalPend?'<div style="font-size:12px;color:#b84848;font-weight:700">Pendiente: '+fmtPeso(totalPend)+'</div>':'')
     +(totalPagado?'<div style="font-size:12px;color:#3d8a5a;font-weight:700">Pagado: '+fmtPeso(totalPagado)+'</div>':'');
   list.appendChild(summary);
+}
+
+
+async function savePagoNotas(pago, notas){
+  if(pago.notas === notas) return;
+  pago.notas = notas;
+  if(pago.id){
+    await sbUpsert('crm_pagos_fijos', pago);
+  } else {
+    // Create new record with notes
+    var now = new Date();
+    var row = {id:uid(), nombre:pago.nombre, monto:pago.monto||0, vencimiento_dia:pago.vencimiento_dia||0, mes:pago.mes, anio:pago.anio, pagado:false, notas:notas};
+    await sbInsert('crm_pagos_fijos', row);
+    if(!S.pagos_fijos) S.pagos_fijos = [];
+    S.pagos_fijos.push(row);
+    pago.id = row.id;
+  }
 }
 
 async function togglePagoFijo(pago){
