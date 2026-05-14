@@ -1303,6 +1303,25 @@ textarea{resize:vertical;min-height:80px}
   </div>
 </div>
 
+<!-- Modal Ajuste Saldo -->
+<div class="modal-bg" id="modal-ajuste-saldo" onclick="modalBgClick(event,this)">
+  <div class="modal">
+    <div class="modal-title">⚖️ Ajustar Saldo Real</div>
+    <input type="hidden" id="mas-cuenta-id">
+    <div id="mas-cuenta-nombre" style="font-size:13px;font-weight:700;color:var(--txt);margin-bottom:4px"></div>
+    <div id="mas-saldo-actual" style="font-size:12px;color:var(--txt3);margin-bottom:14px"></div>
+    <div class="form-row">
+      <label>Saldo real actual ($)</label>
+      <input type="number" id="mas-saldo-real" placeholder="Ingresá el saldo exacto que hay ahora">
+    </div>
+    <div id="mas-diferencia" style="font-size:12px;margin-top:8px;padding:8px 12px;border-radius:6px;background:rgba(0,0,0,0.04)">Ingresá el monto para ver el ajuste</div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" onclick="closeModal('modal-ajuste-saldo')">Cancelar</button>
+      <button class="btn btn-gold btn-sm" onclick="confirmarAjusteSaldo()">Confirmar ajuste</button>
+    </div>
+  </div>
+</div>
+
 <!-- Modal Nueva Cuenta -->
 <div class="modal-bg" id="modal-cuenta" onclick="modalBgClick(event,this)">
   <div class="modal">
@@ -1329,6 +1348,37 @@ textarea{resize:vertical;min-height:80px}
     <div class="modal-footer">
       <button class="btn btn-outline btn-sm" onclick="closeModal('modal-cuenta')">Cancelar</button>
       <button class="btn btn-gold btn-sm" onclick="saveCuenta()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Editar Movimiento -->
+<div class="modal-bg" id="modal-edit-mov" onclick="modalBgClick(event,this)">
+  <div class="modal">
+    <div class="modal-title">Editar Movimiento</div>
+    <input type="hidden" id="mem-id">
+    <div class="form-grid2">
+      <div class="form-row"><label>Tipo</label>
+        <select id="mem-tipo">
+          <option value="ingreso">Ingreso</option>
+          <option value="egreso">Egreso</option>
+        </select>
+      </div>
+      <div class="form-row"><label>Fecha</label><input type="date" id="mem-fecha"></div>
+    </div>
+    <div class="form-row"><label>Descripcion</label><input type="text" id="mem-desc"></div>
+    <div class="form-row"><label>Monto ($)</label><input type="number" id="mem-monto"></div>
+    <div class="form-row"><label>Categoria</label><input type="text" id="mem-cat"></div>
+    <div class="form-row"><label>Cuenta</label><select id="mem-cuenta"><option value="">Sin especificar</option></select></div>
+    <div class="form-row"><label>Estado</label>
+      <select id="mem-pend">
+        <option value="false">OK</option>
+        <option value="true">Pendiente</option>
+      </select>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline btn-sm" onclick="closeModal('modal-edit-mov')">Cancelar</button>
+      <button class="btn btn-gold btn-sm" onclick="saveEditMovimiento()">Guardar</button>
     </div>
   </div>
 </div>
@@ -2755,8 +2805,9 @@ function renderMovimientosTable(){
       +'<td class="td-trunc">'+(m.descripcion||'--')+'</td>'
       +'<td style="font-weight:700;color:'+color+'">'+sign+fmtPeso(m.monto)+'</td>'
       +'<td>'+(m.pendiente?'<span class="ba">Pendiente</span>':'<span class="bgr">OK</span>')+'</td>'
-      +'<td><button class="btn-del">x</button></td>';
+      +'<td style="display:flex;gap:4px"><button class="edit-mov-btn" style="background:transparent;border:1px solid rgba(0,0,0,0.15);color:var(--txt2);font-size:10px;cursor:pointer;padding:2px 6px;border-radius:4px;font-weight:700">Edit</button><button class="btn-del">x</button></td>';
     tr.querySelector('.btn-del').onclick=(function(id){return function(){delMovimiento(id)}})(m.id);
+    tr.querySelector('.edit-mov-btn').onclick=(function(id){return function(){editMovimiento(id)}})(m.id);
     tb.appendChild(tr);
   });
 }
@@ -3411,11 +3462,21 @@ function renderCuentas(){
     editBtn.textContent='Edit';
     editBtn.style.cssText='background:transparent;border:1px solid rgba(0,0,0,0.1);color:var(--txt2);font-size:10px;cursor:pointer;padding:2px 7px;border-radius:4px;font-weight:700';
     editBtn.onclick=(function(id){return function(){editCuenta(id)}})(c.id);
+    var ajusteBtn = document.createElement('button');
+    ajusteBtn.textContent='Ajustar';
+    ajusteBtn.style.cssText='background:transparent;border:1px solid rgba(196,152,32,0.4);color:var(--gold);font-size:10px;cursor:pointer;padding:2px 7px;border-radius:4px;font-weight:700';
+    ajusteBtn.onclick=(function(id){return function(){abrirAjusteSaldo(id)}})(c.id);
+    btns.appendChild(ajusteBtn);
     var delBtn = document.createElement('button');
     delBtn.textContent='x';
     delBtn.className='btn-del';
     delBtn.onclick=(function(id){return function(){deleteCuenta(id)}})(c.id);
-    btns.appendChild(editBtn);btns.appendChild(delBtn);
+    var saldoBtn=document.createElement('button');
+    saldoBtn.textContent='$';
+    saldoBtn.title='Ajustar saldo inicial';
+    saldoBtn.style.cssText='background:transparent;border:1px solid rgba(196,152,32,0.4);color:var(--gold);font-size:10px;cursor:pointer;padding:2px 6px;border-radius:4px;font-weight:900';
+    saldoBtn.onclick=(function(id){return function(){editSaldoCuenta(id)}})(c.id);
+    btns.appendChild(saldoBtn);btns.appendChild(editBtn);btns.appendChild(delBtn);
     header.appendChild(btns);
     card.appendChild(header);
     var nombre = document.createElement('div');
@@ -3479,6 +3540,117 @@ async function saveCuenta(){
   closeModal('modal-cuenta');
   renderCuentas();
   populateCuentaSelects();
+}
+
+
+// ===== EDITAR MOVIMIENTO =====
+function editMovimiento(id){
+  var m=(S.movimientos||[]).find(function(x){return x.id===id}); if(!m) return;
+  document.getElementById('mem-id').value=m.id;
+  document.getElementById('mem-tipo').value=m.tipo||'egreso';
+  document.getElementById('mem-fecha').value=m.fecha||'';
+  document.getElementById('mem-desc').value=m.descripcion||'';
+  document.getElementById('mem-monto').value=m.monto||0;
+  document.getElementById('mem-cat').value=m.categoria||'';
+  document.getElementById('mem-pend').value=m.pendiente?'true':'false';
+  // Populate cuenta select
+  var sel=document.getElementById('mem-cuenta');
+  sel.innerHTML='<option value="">Sin especificar</option>';
+  (S.cuentas||[]).filter(function(c){return c.activa}).forEach(function(c){
+    var opt=document.createElement('option');
+    opt.value=c.id; opt.textContent=c.nombre;
+    if(c.id===m.cuenta_id) opt.selected=true;
+    sel.appendChild(opt);
+  });
+  openModal('modal-edit-mov');
+}
+
+async function saveEditMovimiento(){
+  var id=document.getElementById('mem-id').value;
+  var m=(S.movimientos||[]).find(function(x){return x.id===id}); if(!m) return;
+  m.tipo=document.getElementById('mem-tipo').value;
+  m.fecha=document.getElementById('mem-fecha').value;
+  m.descripcion=document.getElementById('mem-desc').value;
+  m.monto=parseFloat(document.getElementById('mem-monto').value)||0;
+  m.categoria=document.getElementById('mem-cat').value;
+  m.cuenta_id=document.getElementById('mem-cuenta').value||null;
+  m.pendiente=document.getElementById('mem-pend').value==='true';
+  await sbUpsert('crm_movimientos',m);
+  closeModal('modal-edit-mov');
+  toast('Movimiento actualizado');
+  renderMovimientosTable();
+  renderCuentas();
+  renderFinMetrics();
+}
+
+// ===== EDITAR SALDO CUENTA =====
+function editSaldoCuenta(id){
+  var c=(S.cuentas||[]).find(function(x){return x.id===id}); if(!c) return;
+  document.getElementById('mcc-id').value=c.id;
+  document.getElementById('mcc-nombre').value=c.nombre||'';
+  document.getElementById('mcc-tipo').value=c.tipo||'banco';
+  document.getElementById('mcc-moneda').value=c.moneda||'ARS';
+  document.getElementById('mcc-saldo').value=c.saldo_inicial||0;
+  document.getElementById('mc-cuenta-title').textContent='Editar Cuenta';
+  openModal('modal-cuenta');
+}
+
+
+// ===== AJUSTE DE SALDO =====
+function abrirAjusteSaldo(cuentaId){
+  var c=(S.cuentas||[]).find(function(x){return x.id===cuentaId}); if(!c) return;
+  var saldoActual=calcSaldoCuenta(cuentaId);
+  document.getElementById('mas-cuenta-id').value=cuentaId;
+  document.getElementById('mas-cuenta-nombre').textContent=c.nombre;
+  document.getElementById('mas-saldo-actual').textContent='Saldo calculado: $'+saldoActual.toLocaleString('es-AR');
+  document.getElementById('mas-saldo-real').value='';
+  document.getElementById('mas-diferencia').textContent='Ingresá el monto para ver el ajuste';
+  document.getElementById('mas-diferencia').style.color='var(--txt3)';
+  // Live preview of difference
+  document.getElementById('mas-saldo-real').oninput=function(){
+    var real=parseFloat(this.value)||0;
+    var diff=real-saldoActual;
+    var el=document.getElementById('mas-diferencia');
+    if(diff===0){
+      el.textContent='Sin diferencia — el saldo ya coincide';
+      el.style.color='var(--txt3)';
+    } else if(diff>0){
+      el.textContent='Se creará un ajuste de +$'+diff.toLocaleString('es-AR')+' (ingreso)';
+      el.style.color='#3d8a5a';
+    } else {
+      el.textContent='Se creará un ajuste de -$'+Math.abs(diff).toLocaleString('es-AR')+' (egreso)';
+      el.style.color='#b84848';
+    }
+  };
+  openModal('modal-ajuste-saldo');
+}
+
+async function confirmarAjusteSaldo(){
+  var cuentaId=document.getElementById('mas-cuenta-id').value;
+  var saldoReal=parseFloat(document.getElementById('mas-saldo-real').value);
+  if(isNaN(saldoReal)){toast('Ingresá un monto válido',true);return;}
+  var saldoActual=calcSaldoCuenta(cuentaId);
+  var diff=saldoReal-saldoActual;
+  if(diff===0){toast('El saldo ya coincide, sin cambios');closeModal('modal-ajuste-saldo');return;}
+  var c=(S.cuentas||[]).find(function(x){return x.id===cuentaId});
+  var row={
+    id:uid(),
+    tipo:diff>0?'ingreso':'egreso',
+    categoria:'Ajuste de saldo',
+    subcategoria:'',
+    monto:Math.abs(diff),
+    fecha:new Date().toISOString().split('T')[0],
+    descripcion:'Ajuste de saldo — '+(c?c.nombre:cuentaId),
+    pendiente:false,
+    cuenta_id:cuentaId
+  };
+  await sbInsert('crm_movimientos',row);
+  if(!S.movimientos) S.movimientos=[];
+  S.movimientos.push(row);
+  toast('Saldo ajustado a $'+saldoReal.toLocaleString('es-AR'));
+  closeModal('modal-ajuste-saldo');
+  renderCuentas();
+  renderMovimientosTable();
 }
 
 // ===== INIT =====
