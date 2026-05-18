@@ -974,9 +974,12 @@ textarea{resize:vertical;min-height:80px}
           <button class="btn btn-gold btn-sm" onclick="openModal('modal-cuenta')">+ Nueva cuenta</button>
         </div>
         <div id="cuentas-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px"></div>
-        <div style="background:linear-gradient(135deg,rgba(196,152,32,0.08),rgba(196,152,32,0.04));border:1px solid rgba(196,152,32,0.2);border-radius:var(--brs);padding:14px 18px;display:flex;justify-content:space-between;align-items:center">
-          <div style="font-size:13px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:0.05em">Total disponible (ARS)</div>
-          <div id="cuentas-total" style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:28px;color:var(--gold)">$0</div>
+        <div style="background:linear-gradient(135deg,rgba(196,152,32,0.08),rgba(196,152,32,0.04));border:1px solid rgba(196,152,32,0.2);border-radius:var(--brs);padding:14px 18px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div style="font-size:13px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:0.05em">Total disponible (ARS)</div>
+            <div id="cuentas-total" style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:28px;color:var(--gold)">$0</div>
+          </div>
+          <div id="cuentas-usd-rate" style="font-size:11px;color:var(--txt3);text-align:right;margin-top:2px"></div>
         </div>
       </div>
 
@@ -3429,6 +3432,18 @@ function populateCuentaSelects(){
   });
 }
 
+var USD_BNA = 1420; // Se actualiza automáticamente al cargar
+
+async function fetchDolarBNA(){
+  try {
+    var res = await fetch('https://api.bluelytics.com.ar/v2/latest');
+    var data = await res.json();
+    if(data && data.oficial && data.oficial.value_sell){
+      USD_BNA = data.oficial.value_sell;
+    }
+  } catch(e){}
+}
+
 function calcSaldoCuenta(cuentaId){
   var cuenta = (S.cuentas||[]).find(function(c){return c.id===cuentaId});
   if(!cuenta) return 0;
@@ -3441,6 +3456,9 @@ function calcSaldoCuenta(cuentaId){
 }
 
 function renderCuentas(){
+  fetchDolarBNA().then(function(){renderCuentasUI()});
+}
+function renderCuentasUI(){
   var grid = document.getElementById('cuentas-grid'); if(!grid) return;
   var cuentas = (S.cuentas||[]).filter(function(c){return c.activa});
   if(!cuentas.length){
@@ -3489,6 +3507,12 @@ function renderCuentas(){
     var saldoEl = document.createElement('div');
     saldoEl.style.cssText="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:22px;color:"+col;
     saldoEl.textContent=(c.moneda==='USD'?'U$D ':' $')+Math.abs(saldo).toLocaleString('es-AR');
+    if(c.moneda==='USD'){
+      var arsEq = document.createElement('div');
+      arsEq.style.cssText='font-size:11px;color:var(--txt3);margin-top:2px';
+      arsEq.textContent='≈ $'+Math.round(saldo*USD_BNA).toLocaleString('es-AR')+' ARS (BNA)';
+      card.appendChild(arsEq);
+    }
     card.appendChild(saldoEl);
     var meta = document.createElement('div');
     meta.style.cssText='font-size:10px;color:var(--txt3);margin-top:2px';
@@ -3496,8 +3520,18 @@ function renderCuentas(){
     card.appendChild(meta);
     grid.appendChild(card);
   });
+  // Add USD accounts converted to ARS
+  cuentas.forEach(function(c){
+    if(c.moneda==='USD'){
+      var saldoUSD = calcSaldoCuenta(c.id);
+      totalARS += saldoUSD * USD_BNA;
+    }
+  });
   var totalEl = document.getElementById('cuentas-total');
-  if(totalEl) totalEl.textContent = '$'+totalARS.toLocaleString('es-AR');
+  if(totalEl) totalEl.textContent = '$'+Math.round(totalARS).toLocaleString('es-AR');
+  // Show USD rate
+  var rateEl = document.getElementById('cuentas-usd-rate');
+  if(rateEl) rateEl.textContent = 'USD BNA: $'+USD_BNA.toLocaleString('es-AR');
 }
 
 function editCuenta(id){
