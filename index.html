@@ -2828,6 +2828,7 @@ async function saveMovimiento(tipo){
   await sbInsert('crm_movimientos',row);
   if(!S.movimientos)S.movimientos=[];
   S.movimientos.unshift(row);
+  renderCuentas();
   // Reset monto and desc
   var montoEl=document.getElementById(isIng?'fin-ing-monto':'fin-eg-monto');if(montoEl)montoEl.value='';
   var descEl=document.getElementById(isIng?'fin-ing-desc':'fin-eg-desc');if(descEl)descEl.value='';
